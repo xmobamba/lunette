@@ -51,15 +51,15 @@ export const PromoBanner: React.FC<PromoBannerProps> = ({
   };
 
   return (
-    <section id="promo" className="py-10 bg-orange-50/60 border-y-2 border-orange-200/80 relative overflow-hidden">
+    <section id="promo" className="py-10 bg-[#F4EFEA]/80 border-y border-[#E8E1D7] relative overflow-hidden">
       {/* Decorative subtle background glows */}
-      <div className="absolute -left-16 -top-16 w-56 h-56 bg-orange-200/40 rounded-full blur-3xl pointer-events-none"></div>
-      <div className="absolute -right-16 -bottom-16 w-56 h-56 bg-emerald-200/40 rounded-full blur-3xl pointer-events-none"></div>
+      <div className="absolute -left-16 -top-16 w-56 h-56 bg-[#E8C5A8]/20 rounded-full blur-3xl pointer-events-none"></div>
+      <div className="absolute -right-16 -bottom-16 w-56 h-56 bg-[#C8DEC5]/20 rounded-full blur-3xl pointer-events-none"></div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 relative z-10">
         {/* Banner Carousel Card */}
         <div
-          className={`bg-gradient-to-r ${theme.bgGradient} text-white rounded-3xl p-6 sm:p-9 shadow-2xl relative border-2 ${theme.border} transition-all duration-500 overflow-hidden`}
+          className={`bg-gradient-to-r ${theme.bgGradient} text-white rounded-3xl p-6 sm:p-9 shadow-xl relative border ${theme.border} transition-all duration-500 overflow-hidden`}
         >
           {/* Subtle patterned overlay */}
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-white/10 via-transparent to-black/20 pointer-events-none"></div>

@@ -391,28 +391,28 @@ export const AdminManagerModal: React.FC<AdminManagerModalProps> = ({
   return (
     <div
       id="admin-manager-backdrop"
-      className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-[#004D25]/80 backdrop-blur-sm animate-in fade-in duration-200"
+      className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-[#18261F]/80 backdrop-blur-xs animate-in fade-in duration-200"
     >
       <div
         id="admin-manager-container"
-        className="relative w-full max-w-4xl max-h-[92vh] bg-white rounded-3xl shadow-2xl border-4 border-orange-200 overflow-hidden flex flex-col text-[#004D25]"
+        className="relative w-full max-w-4xl max-h-[92vh] bg-white rounded-3xl shadow-2xl border border-[#E8E1D7] overflow-hidden flex flex-col text-[#18261F]"
       >
         {/* Header Bar */}
-        <div className="bg-[#004D25] text-white p-4 sm:p-5 flex items-center justify-between border-b-4 border-[#FF6E14]">
+        <div className="bg-[#18261F] text-white p-4 sm:p-5 flex items-center justify-between border-b border-[#C85A17]/40">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-[#FF6E14] text-white flex items-center justify-center shadow-md">
+            <div className="w-10 h-10 rounded-2xl bg-[#C85A17] text-white flex items-center justify-center shadow-xs">
               <Sliders className="w-5 h-5" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="font-serif text-lg sm:text-xl font-black text-white">
+                <h2 className="font-serif text-lg sm:text-xl font-bold text-white">
                   Gestion de la Boutique L’AURA
                 </h2>
-                <span className="text-[10px] bg-[#FF6E14] text-white font-black px-2 py-0.5 rounded-full uppercase">
+                <span className="text-[10px] bg-[#C85A17] text-white font-bold px-2 py-0.5 rounded-full uppercase">
                   🇨🇮 Admin
                 </span>
               </div>
-              <p className="text-xs text-white/80 font-medium">
+              <p className="text-xs text-white/75 font-normal">
                 Gérez vos bannières de promotion, votre catalogue de lunettes, prix et numéro WhatsApp.
               </p>
             </div>
@@ -420,7 +420,7 @@ export const AdminManagerModal: React.FC<AdminManagerModalProps> = ({
 
           <button
             onClick={onClose}
-            className="p-2 rounded-full bg-white/10 hover:bg-[#FF6E14] text-white transition-colors cursor-pointer"
+            className="p-2 rounded-full bg-white/10 hover:bg-[#C85A17] text-white transition-colors cursor-pointer"
             aria-label="Fermer le panneau"
           >
             <X className="w-5 h-5" />
@@ -428,7 +428,7 @@ export const AdminManagerModal: React.FC<AdminManagerModalProps> = ({
         </div>
 
         {/* Navigation Tabs */}
-        <div className="bg-orange-50/90 border-b border-orange-200 px-3 sm:px-6 py-2.5 flex items-center gap-2 overflow-x-auto no-scrollbar">
+        <div className="bg-[#FAF8F5] border-b border-[#E8E1D7] px-3 sm:px-6 py-2.5 flex items-center gap-2 overflow-x-auto no-scrollbar">
           {/* Tab 1: Bannières & Promos (Requested by user) */}
           <button
             onClick={() => {
@@ -436,13 +436,13 @@ export const AdminManagerModal: React.FC<AdminManagerModalProps> = ({
               setEditingProduct(null);
               setEditingPromo(null);
             }}
-            className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-black flex items-center gap-2 transition-all cursor-pointer whitespace-nowrap ${
+            className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 transition-all cursor-pointer whitespace-nowrap ${
               activeTab === 'promos'
-                ? 'bg-[#FF6E14] text-white shadow-md ring-2 ring-orange-300'
-                : 'bg-white text-[#004D25] hover:bg-orange-100 border border-orange-200'
+                ? 'bg-[#C85A17] text-white shadow-xs'
+                : 'bg-white text-[#18261F] hover:bg-[#F3EFE9] border border-[#E8E1D7]'
             }`}
           >
-            <Megaphone className="w-4 h-4 text-amber-300" />
+            <Megaphone className="w-4 h-4 text-amber-200" />
             <span>Bannières & Promos ({activePromosCount} active{activePromosCount > 1 ? 's' : ''})</span>
           </button>
 
@@ -453,13 +453,13 @@ export const AdminManagerModal: React.FC<AdminManagerModalProps> = ({
               setEditingProduct(null);
               setEditingPromo(null);
             }}
-            className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-black flex items-center gap-2 transition-all cursor-pointer whitespace-nowrap ${
+            className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 transition-all cursor-pointer whitespace-nowrap ${
               activeTab === 'products'
-                ? 'bg-[#004D25] text-white shadow-md'
-                : 'bg-white text-[#004D25] hover:bg-orange-100 border border-orange-200'
+                ? 'bg-[#18261F] text-white shadow-xs'
+                : 'bg-white text-[#18261F] hover:bg-[#F3EFE9] border border-[#E8E1D7]'
             }`}
           >
-            <ShoppingBag className="w-4 h-4 text-amber-400" />
+            <ShoppingBag className="w-4 h-4 text-amber-200" />
             <span>Catalogue ({products.length})</span>
           </button>
 
@@ -470,10 +470,10 @@ export const AdminManagerModal: React.FC<AdminManagerModalProps> = ({
               setEditingProduct(null);
               setEditingPromo(null);
             }}
-            className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-black flex items-center gap-2 transition-all cursor-pointer whitespace-nowrap ${
+            className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 transition-all cursor-pointer whitespace-nowrap ${
               activeTab === 'add_product'
-                ? 'bg-[#009E60] text-white shadow-md'
-                : 'bg-white text-[#004D25] hover:bg-green-50 border border-orange-200'
+                ? 'bg-[#1E6B48] text-white shadow-xs'
+                : 'bg-white text-[#18261F] hover:bg-[#E8F1EC] border border-[#E8E1D7]'
             }`}
           >
             <Plus className="w-4 h-4" />
@@ -487,10 +487,10 @@ export const AdminManagerModal: React.FC<AdminManagerModalProps> = ({
               setEditingProduct(null);
               setEditingPromo(null);
             }}
-            className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-black flex items-center gap-2 transition-all cursor-pointer whitespace-nowrap ${
+            className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 transition-all cursor-pointer whitespace-nowrap ${
               activeTab === 'store'
-                ? 'bg-[#FF6E14] text-white shadow-md'
-                : 'bg-white text-[#004D25] hover:bg-orange-100 border border-orange-200'
+                ? 'bg-[#C85A17] text-white shadow-xs'
+                : 'bg-white text-[#18261F] hover:bg-[#F3EFE9] border border-[#E8E1D7]'
             }`}
           >
             <Phone className="w-4 h-4" />
@@ -500,7 +500,7 @@ export const AdminManagerModal: React.FC<AdminManagerModalProps> = ({
 
         {/* Global Toast / Feedback */}
         {feedbackMsg && (
-          <div className="bg-emerald-600 text-white text-xs font-black px-4 py-2 flex items-center justify-between shadow-inner animate-in fade-in">
+          <div className="bg-[#1E6B48] text-white text-xs font-semibold px-4 py-2 flex items-center justify-between shadow-inner animate-in fade-in">
             <div className="flex items-center gap-2">
               <CheckCircle className="w-4 h-4" />
               <span>{feedbackMsg}</span>

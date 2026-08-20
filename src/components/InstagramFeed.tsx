@@ -54,18 +54,18 @@ export const InstagramFeed: React.FC = () => {
   };
 
   return (
-    <section id="instagram-feed" className="py-16 sm:py-20 bg-white overflow-hidden">
+    <section id="instagram-feed" className="py-16 sm:py-20 bg-[#FAF8F5] overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
         {/* Header */}
         <div className="text-center max-w-2xl mx-auto mb-10">
-          <div className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-orange-50 border-2 border-orange-200 text-[#FF6E14] text-xs font-black uppercase tracking-widest mb-3 shadow-xs">
-            <Instagram className="w-3.5 h-3.5 text-[#009E60]" />
+          <div className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-[#FAF0E6] border border-[#E8D4C0] text-[#B85318] text-xs font-bold uppercase tracking-widest mb-3 shadow-2xs">
+            <Instagram className="w-3.5 h-3.5 text-[#1E6B48]" />
             <span>{STORE_CONFIG.instagramHandle}</span>
           </div>
-          <h2 className="font-serif text-3xl sm:text-4xl md:text-5xl font-black text-[#004D25] tracking-tight">
+          <h2 className="font-serif text-3xl sm:text-4xl md:text-5xl font-bold text-[#18261F] tracking-tight">
             Rejoignez la communauté
           </h2>
-          <p className="text-xs sm:text-sm font-bold tracking-widest text-[#FF6E14] uppercase mt-2">
+          <p className="text-xs sm:text-sm font-semibold tracking-widest text-[#C85A17] uppercase mt-2">
             Nouveautés • Looks Abidjan • Arrivages • Promotions
           </p>
         </div>
@@ -79,7 +79,7 @@ export const InstagramFeed: React.FC = () => {
               target="_blank"
               rel="noopener noreferrer"
               onClick={() => handleSocialClick('Instagram')}
-              className="group relative aspect-square rounded-2xl overflow-hidden bg-orange-50 block shadow-sm hover:shadow-xl transition-all border-2 border-orange-100 hover:border-[#FF6E14]"
+              className="group relative aspect-square rounded-2xl overflow-hidden bg-white block shadow-2xs hover:shadow-md transition-all border border-[#E8E1D7] hover:border-[#C85A17]/60"
             >
               <img
                 src={post.image}
@@ -88,16 +88,16 @@ export const InstagramFeed: React.FC = () => {
                 className="w-full h-full object-cover object-center group-hover:scale-110 transition-transform duration-500"
                 loading="lazy"
               />
-              <div className="absolute inset-0 bg-[#004D25]/70 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-between p-3 text-white">
+              <div className="absolute inset-0 bg-[#18261F]/75 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-between p-3 text-white">
                 <div className="self-end">
                   <Instagram className="w-4 h-4 text-white" />
                 </div>
                 <div>
-                  <div className="flex items-center gap-1 text-xs font-black text-[#FF6E14] mb-1">
-                    <Heart className="w-3.5 h-3.5 fill-[#FF6E14]" />
+                  <div className="flex items-center gap-1 text-xs font-bold text-[#F4A261] mb-1">
+                    <Heart className="w-3.5 h-3.5 fill-[#F4A261]" />
                     <span>{post.likes}</span>
                   </div>
-                  <p className="text-[10px] text-white font-medium line-clamp-2 leading-tight">
+                  <p className="text-[10px] text-white/95 font-normal line-clamp-2 leading-tight">
                     {post.caption}
                   </p>
                 </div>
@@ -113,7 +113,7 @@ export const InstagramFeed: React.FC = () => {
             target="_blank"
             rel="noopener noreferrer"
             onClick={() => handleSocialClick('Instagram')}
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#FF6E14] hover:bg-[#E05300] text-white text-xs sm:text-sm font-black transition-all hover:scale-105 shadow-md border-2 border-white"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#C85A17] hover:bg-[#A84A12] text-white text-xs sm:text-sm font-bold transition-all hover:scale-105 shadow-2xs border border-white/20"
           >
             <Instagram className="w-4 h-4 text-white" />
             <span>Instagram</span>
@@ -124,7 +124,7 @@ export const InstagramFeed: React.FC = () => {
             target="_blank"
             rel="noopener noreferrer"
             onClick={() => handleSocialClick('TikTok')}
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#009E60] hover:bg-[#008552] text-white text-xs sm:text-sm font-black transition-all hover:scale-105 shadow-md border-2 border-white"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#1E6B48] hover:bg-[#185539] text-white text-xs sm:text-sm font-bold transition-all hover:scale-105 shadow-2xs border border-white/20"
           >
             <span className="font-bold text-xs">♪</span>
             <span>TikTok</span>
@@ -135,7 +135,7 @@ export const InstagramFeed: React.FC = () => {
             target="_blank"
             rel="noopener noreferrer"
             onClick={() => handleSocialClick('Facebook')}
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#FF6E14] hover:bg-[#E05300] text-white text-xs sm:text-sm font-black transition-all hover:scale-105 shadow-md border-2 border-white"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#3B5998] hover:bg-[#2D4373] text-white text-xs sm:text-sm font-bold transition-all hover:scale-105 shadow-2xs border border-white/20"
           >
             <Share2 className="w-4 h-4 text-white" />
             <span>Facebook</span>

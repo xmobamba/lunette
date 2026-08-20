@@ -171,10 +171,10 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-white text-[#004D25] font-sans antialiased selection:bg-[#FF6E14] selection:text-white">
+    <div className="min-h-screen bg-[#FAF8F5] text-[#18261F] font-sans antialiased selection:bg-[#C85A17] selection:text-white">
       {/* Admin Mode Bar Indicator (visible only to admin) */}
       {isAdminMode && (
-        <div className="bg-[#00381B] text-white text-xs py-1.5 px-4 sticky top-0 z-50 flex items-center justify-between border-b border-[#FF6E14]">
+        <div className="bg-[#18261F] text-white text-xs py-1.5 px-4 sticky top-0 z-50 flex items-center justify-between border-b border-[#C85A17]/60">
           <div className="flex items-center gap-2 font-bold">
             <span className="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
             <span>🔐 Mode Administrateur Actif</span>
@@ -183,7 +183,7 @@ export default function App() {
           <div className="flex items-center gap-2">
             <button
               onClick={() => setIsAdminOpen(true)}
-              className="bg-[#FF6E14] hover:bg-[#E05300] text-white px-2.5 py-0.5 rounded text-[11px] font-black cursor-pointer shadow-xs"
+              className="bg-[#C85A17] hover:bg-[#A84A12] text-white px-2.5 py-0.5 rounded text-[11px] font-bold cursor-pointer shadow-xs transition-colors"
             >
               Gérer la boutique
             </button>
@@ -270,10 +270,10 @@ export default function App() {
         <button
           onClick={() => setIsAdminOpen(true)}
           id="floating-admin-btn"
-          className="flex items-center gap-2 bg-[#004D25] hover:bg-[#00381B] text-white px-3.5 py-2.5 rounded-2xl shadow-xl border-2 border-orange-300 transition-all hover:scale-105 active:scale-95 text-xs font-black cursor-pointer group"
+          className="flex items-center gap-2 bg-[#18261F] hover:bg-[#25392F] text-[#FAF8F5] px-3.5 py-2.5 rounded-2xl shadow-lg border border-[#C85A17]/40 transition-all hover:scale-105 active:scale-95 text-xs font-bold cursor-pointer group backdrop-blur-md"
           title="Ouvrir la gestion des bannières, promotions, catalogue et coordonnées"
         >
-          <span className="w-2 h-2 rounded-full bg-[#FF6E14] animate-ping group-hover:scale-125"></span>
+          <span className="w-2 h-2 rounded-full bg-[#C85A17] animate-pulse"></span>
           <span>⚙️ Gérer Boutique & Promos</span>
         </button>
       </div>
