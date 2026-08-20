@@ -1,17 +1,42 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { StoreConfig } from '../types';
 import { STORE_CONFIG } from '../config/store';
-import { Instagram, MessageCircle, Share2, MapPin, Phone, ShieldCheck, Heart, Settings, SlidersHorizontal } from 'lucide-react';
+import { Instagram, MessageCircle, Share2, MapPin, Heart, SlidersHorizontal } from 'lucide-react';
 import { buildGeneralWhatsAppUrl } from '../utils/whatsapp';
 
 interface FooterProps {
   storeConfig?: StoreConfig;
   customPhone?: string;
   onOpenAdmin?: () => void;
+  isAdminMode?: boolean;
+  onSecretAdminUnlock?: () => void;
 }
 
-export const Footer: React.FC<FooterProps> = ({ storeConfig = STORE_CONFIG, customPhone, onOpenAdmin }) => {
+export const Footer: React.FC<FooterProps> = ({
+  storeConfig = STORE_CONFIG,
+  customPhone,
+  onOpenAdmin,
+  isAdminMode = false,
+  onSecretAdminUnlock,
+}) => {
   const displayPhone = customPhone || storeConfig.phoneDisplay;
+  const [clickCount, setClickCount] = useState(0);
+
+  const handleSecretTrigger = () => {
+    const nextCount = clickCount + 1;
+    setClickCount(nextCount);
+
+    if (nextCount >= 3) {
+      setClickCount(0);
+      if (onSecretAdminUnlock) {
+        onSecretAdminUnlock();
+      }
+    }
+
+    setTimeout(() => {
+      setClickCount(0);
+    }, 2000);
+  };
 
   return (
     <footer id="main-footer" className="bg-[#004D25] text-white border-t-4 border-[#FF6E14] pt-16 pb-28 sm:pb-16">
@@ -93,7 +118,7 @@ export const Footer: React.FC<FooterProps> = ({ storeConfig = STORE_CONFIG, cust
                 <span>WhatsApp : {displayPhone}</span>
               </a>
 
-              {onOpenAdmin && (
+              {isAdminMode && onOpenAdmin && (
                 <button
                   onClick={onOpenAdmin}
                   className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs border border-white/30 transition-all cursor-pointer mt-1"
@@ -136,9 +161,15 @@ export const Footer: React.FC<FooterProps> = ({ storeConfig = STORE_CONFIG, cust
           </div>
         </div>
 
-        {/* Bottom copyright line */}
-        <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-white/80 font-medium">
-          <p>© 2026 {storeConfig.storeName} — Tous droits réservés.</p>
+        {/* Bottom copyright line with secret admin triple-click trigger */}
+        <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-white/80 font-medium select-none">
+          <p
+            onClick={handleSecretTrigger}
+            className="cursor-default select-none transition-opacity hover:opacity-100"
+            title=""
+          >
+            © 2026 {storeConfig.storeName} — Tous droits réservés.
+          </p>
           <div className="flex items-center gap-2">
             <span>Fait avec amour pour Abidjan 🇨🇮</span>
             <Heart className="w-3.5 h-3.5 text-[#FF6E14] fill-current" />

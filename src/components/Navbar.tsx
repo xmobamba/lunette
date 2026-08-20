@@ -6,16 +6,20 @@ import { buildGeneralWhatsAppUrl } from '../utils/whatsapp';
 
 interface NavbarProps {
   onOpenSettings?: () => void;
+  onExitAdmin?: () => void;
   favoritesCount?: number;
   storeConfig?: StoreConfig;
   customPhone?: string;
+  isAdminMode?: boolean;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
   onOpenSettings,
+  onExitAdmin,
   favoritesCount = 0,
   storeConfig = STORE_CONFIG,
   customPhone,
+  isAdminMode = false,
 }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -96,18 +100,30 @@ export const Navbar: React.FC<NavbarProps> = ({
 
         {/* Right CTA Actions */}
         <div className="flex items-center gap-1.5 sm:gap-2.5">
-          {/* Quick config/settings toggle */}
-          {onOpenSettings && (
-            <button
-              onClick={onOpenSettings}
-              id="settings-trigger-btn"
-              title="Modifier les produits, prix et numéro"
-              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-[#004D25] hover:text-[#FF6E14] hover:bg-orange-50 transition-colors cursor-pointer border border-orange-200 bg-white shadow-2xs active:scale-95 text-xs font-bold"
-              aria-label="Modifier la boutique manuellement"
-            >
-              <SlidersHorizontal className="w-3.5 h-3.5 text-[#FF6E14]" />
-              <span className="hidden sm:inline">Gérer boutique</span>
-            </button>
+          {/* Admin manager toggle - ONLY visible when in admin mode */}
+          {isAdminMode && onOpenSettings && (
+            <div className="flex items-center gap-1">
+              <button
+                onClick={onOpenSettings}
+                id="settings-trigger-btn"
+                title="Panneau d'administration de la boutique"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-white bg-[#004D25] hover:bg-[#00381B] transition-colors cursor-pointer border border-[#009E60]/40 shadow-xs active:scale-95 text-xs font-black ring-2 ring-[#FF6E14]/50"
+                aria-label="Modifier la boutique manuellement"
+              >
+                <SlidersHorizontal className="w-3.5 h-3.5 text-[#FF6E14]" />
+                <span className="inline">Admin</span>
+              </button>
+
+              {onExitAdmin && (
+                <button
+                  onClick={onExitAdmin}
+                  title="Quitter le mode administrateur"
+                  className="px-2 py-1.5 rounded-lg text-xs font-semibold text-gray-500 hover:text-red-600 hover:bg-red-50 border border-gray-200"
+                >
+                  ✕
+                </button>
+              )}
+            </div>
           )}
 
           {/* Desktop & Mobile WhatsApp CTA */}
@@ -157,16 +173,16 @@ export const Navbar: React.FC<NavbarProps> = ({
               </a>
             ))}
 
-            {onOpenSettings && (
+            {isAdminMode && onOpenSettings && (
               <button
                 onClick={() => {
                   setMobileMenuOpen(false);
                   onOpenSettings();
                 }}
-                className="w-full text-left text-sm font-bold text-[#FF6E14] bg-orange-50/80 hover:bg-orange-100 px-3 py-2 rounded-xl transition-all flex items-center gap-2 mt-1"
+                className="w-full text-left text-sm font-bold text-white bg-[#004D25] hover:bg-[#00381B] px-3 py-2 rounded-xl transition-all flex items-center gap-2 mt-1"
               >
                 <SlidersHorizontal className="w-4 h-4 text-[#FF6E14]" />
-                <span>⚙️ Gérer produits, prix & WhatsApp</span>
+                <span>⚙️ Panneau Admin (Mode Actif)</span>
               </button>
             )}
           </div>

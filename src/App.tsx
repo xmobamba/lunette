@@ -39,9 +39,69 @@ export default function App() {
     }
   });
 
-  // 3. Selection, Favorites and Modals
+  // 3. Selection, Favorites, and Secret Admin Mode
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isAdminOpen, setIsAdminOpen] = useState(false);
+  const [isAdminMode, setIsAdminMode] = useState<boolean>(() => {
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      const hasAdminParam = urlParams.get('admin') === 'true' || urlParams.get('admin') === '1' || urlParams.get('mode') === 'admin';
+      const hasAdminHash = window.location.hash === '#admin';
+      const hasAdminSession = sessionStorage.getItem('aura_admin_mode') === 'true';
+      return hasAdminParam || hasAdminHash || hasAdminSession;
+    } catch {
+      return false;
+    }
+  });
+
+  // Check URL on load to auto-open if specifically requested via URL
+  useEffect(() => {
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('admin') === 'true' || urlParams.get('admin') === '1' || window.location.hash === '#admin') {
+        setIsAdminMode(true);
+        setIsAdminOpen(true);
+        sessionStorage.setItem('aura_admin_mode', 'true');
+      }
+
+      const handleHashChange = () => {
+        if (window.location.hash === '#admin') {
+          setIsAdminMode(true);
+          setIsAdminOpen(true);
+          sessionStorage.setItem('aura_admin_mode', 'true');
+        }
+      };
+
+      window.addEventListener('hashchange', handleHashChange);
+      return () => window.removeEventListener('hashchange', handleHashChange);
+    } catch {
+      // ignore
+    }
+  }, []);
+
+  const handleActivateAdmin = () => {
+    setIsAdminMode(true);
+    setIsAdminOpen(true);
+    try {
+      sessionStorage.setItem('aura_admin_mode', 'true');
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const handleExitAdmin = () => {
+    setIsAdminMode(false);
+    setIsAdminOpen(false);
+    try {
+      sessionStorage.removeItem('aura_admin_mode');
+      if (window.location.search.includes('admin') || window.location.hash === '#admin') {
+        const newUrl = window.location.pathname;
+        window.history.replaceState({}, '', newUrl);
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
 
   const [favorites, setFavorites] = useState<string[]>(() => {
     try {
@@ -90,12 +150,39 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-white text-[#004D25] font-sans antialiased selection:bg-[#FF6E14] selection:text-white">
+      {/* Admin Mode Bar Indicator (visible only to admin) */}
+      {isAdminMode && (
+        <div className="bg-[#00381B] text-white text-xs py-1.5 px-4 sticky top-0 z-50 flex items-center justify-between border-b border-[#FF6E14]">
+          <div className="flex items-center gap-2 font-bold">
+            <span className="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span>🔐 Mode Administrateur Actif</span>
+            <span className="hidden sm:inline text-white/70 font-normal">• Les clients ne voient pas ce panneau</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setIsAdminOpen(true)}
+              className="bg-[#FF6E14] hover:bg-[#E05300] text-white px-2.5 py-0.5 rounded text-[11px] font-black cursor-pointer shadow-xs"
+            >
+              Gérer la boutique
+            </button>
+            <button
+              onClick={handleExitAdmin}
+              className="text-white/80 hover:text-white hover:bg-white/10 px-2 py-0.5 rounded text-[11px] font-medium"
+            >
+              Quitter
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* 1. Header / Navbar */}
       <Navbar
         onOpenSettings={() => setIsAdminOpen(true)}
+        onExitAdmin={handleExitAdmin}
         favoritesCount={favorites.length}
         storeConfig={storeConfig}
         customPhone={storeConfig.phoneRaw}
+        isAdminMode={isAdminMode}
       />
 
       <main className="pb-20 sm:pb-0">
@@ -145,6 +232,8 @@ export default function App() {
         storeConfig={storeConfig}
         customPhone={storeConfig.phoneRaw}
         onOpenAdmin={() => setIsAdminOpen(true)}
+        isAdminMode={isAdminMode}
+        onSecretAdminUnlock={handleActivateAdmin}
       />
 
       {/* 12. Floating Desktop & Sticky Mobile WhatsApp Triggers */}
