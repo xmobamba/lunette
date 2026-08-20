@@ -17,6 +17,8 @@ import { Footer } from './components/Footer';
 import { FloatingWhatsApp } from './components/FloatingWhatsApp';
 import { ProductModal } from './components/ProductModal';
 import { AdminManagerModal } from './components/AdminManagerModal';
+import { SocialStories } from './components/SocialStories';
+import { MobileSocialNav } from './components/MobileSocialNav';
 
 export default function App() {
   // 1. Dynamic Products State with localStorage persistence (v2 catalog with updated 35000 FCFA price)
@@ -151,18 +153,21 @@ export default function App() {
         promos={promos}
       />
 
-      <main className="pb-20 sm:pb-0">
+      <main className="pb-24 sm:pb-0">
         {/* 2. Hero Section */}
         <Hero customPhone={storeConfig.phoneRaw} />
 
-        {/* 3. Next-Generation Promotional Banner Showcase (Immediately visible) */}
+        {/* 3. Instagram & TikTok Interactive Stories Reel (Lookbook, Tendances, Unboxing) */}
+        <SocialStories customPhone={storeConfig.phoneRaw} />
+
+        {/* 4. Next-Generation Promotional Banner Showcase (Immediately visible) */}
         <PromoBanner
           promos={promos}
           storeConfig={storeConfig}
           customPhone={storeConfig.phoneRaw}
         />
 
-        {/* 4. Products Collection & Categories Grid */}
+        {/* 5. Products Collection & Categories Grid */}
         <ProductGrid
           products={products}
           onOpenQuickView={(p) => setSelectedProduct(p)}
@@ -171,37 +176,43 @@ export default function App() {
           customPhone={storeConfig.phoneRaw}
         />
 
-        {/* 5. Best-sellers Highlight */}
+        {/* 6. Best-sellers Highlight */}
         <BestsellersSection
           products={products}
           onOpenQuickView={(p) => setSelectedProduct(p)}
           customPhone={storeConfig.phoneRaw}
         />
 
-        {/* 6. Why Choose Us (Pourquoi nous ?) */}
+        {/* 7. Why Choose Us (Pourquoi nous ?) */}
         <WhyUs />
 
-        {/* 7. Social Proof & Customer Reviews */}
+        {/* 8. Social Proof & Customer Reviews */}
         <SocialProof />
 
-        {/* 8. Instagram & Social Community Feed */}
+        {/* 9. Instagram & Social Community Feed */}
         <InstagramFeed />
 
-        {/* 9. FAQ Accordion */}
+        {/* 10. FAQ Accordion */}
         <FAQ />
 
-        {/* 10. Final Conversion CTA */}
+        {/* 11. Final Conversion CTA */}
         <FinalCTA customPhone={storeConfig.phoneRaw} />
       </main>
 
-      {/* 11. Footer with Secret 3-Click Admin Trigger */}
+      {/* 12. Footer with Secret 3-Click Admin Trigger */}
       <Footer
         storeConfig={storeConfig}
         customPhone={storeConfig.phoneRaw}
         onOpenAdmin={() => setIsAdminOpen(true)}
       />
 
-      {/* 12. Floating Desktop & Sticky Mobile WhatsApp Triggers */}
+      {/* 13. Mobile Instagram-Style Sticky Bottom Nav */}
+      <MobileSocialNav
+        favoritesCount={favorites.length}
+        customPhone={storeConfig.phoneRaw}
+      />
+
+      {/* 14. Floating Desktop & Sticky Mobile WhatsApp Triggers */}
       <FloatingWhatsApp
         favoriteCount={favorites.length}
         customPhone={storeConfig.phoneRaw}
