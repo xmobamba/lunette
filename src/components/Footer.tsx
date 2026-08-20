@@ -118,13 +118,13 @@ export const Footer: React.FC<FooterProps> = ({
                 <span>WhatsApp : {displayPhone}</span>
               </a>
 
-              {isAdminMode && onOpenAdmin && (
+              {onOpenAdmin && (
                 <button
                   onClick={onOpenAdmin}
-                  className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs border border-white/30 transition-all cursor-pointer mt-1"
+                  className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white/15 hover:bg-[#FF6E14] text-white font-black text-xs border border-white/30 transition-all cursor-pointer mt-1 shadow-sm active:scale-95"
                 >
-                  <SlidersHorizontal className="w-3.5 h-3.5 text-[#FF6E14]" />
-                  <span>⚙️ Modifier les produits & prix</span>
+                  <SlidersHorizontal className="w-3.5 h-3.5 text-amber-300" />
+                  <span>⚙️ Gérer la boutique & Promos</span>
                 </button>
               )}
 

@@ -34,6 +34,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
   const navLinks = [
     { label: 'Accueil', href: '#top' },
+    { label: 'Offres & Promos', href: '#promo', isPromo: true },
     { label: 'Collection', href: '#collection' },
     { label: 'Best-sellers', href: '#bestsellers' },
     { label: 'Pourquoi nous ?', href: '#pourquoi-nous' },
@@ -61,10 +62,13 @@ export const Navbar: React.FC<NavbarProps> = ({
           <span className="inline-block w-2 h-2 rounded-full bg-[#009E60] animate-pulse"></span>
           <span>Boutique en ligne officielle • Abidjan, Côte d'Ivoire</span>
         </div>
-        <div className="flex items-center gap-5 font-semibold">
-          <span className="text-[#FF6E14]">🇨🇮 Livraison express 24h à Abidjan</span>
+        <div className="flex items-center gap-4 font-semibold">
+          <a href="#promo" className="text-[#FF6E14] hover:underline flex items-center gap-1 font-bold">
+            <span className="bg-[#FF6E14] text-white text-[9px] px-1.5 py-0.2 rounded-full">PROMOS</span>
+            <span>🇨🇮 Offres spéciales Abidjan en cours</span>
+          </a>
           <span className="text-orange-200">•</span>
-          <span className="text-[#009E60]">Paiement sécurisé à la réception (Cash / Wave / OM)</span>
+          <span className="text-[#009E60]">Paiement sécurisé à la livraison (Cash / Wave / OM)</span>
         </div>
       </div>
 
@@ -85,13 +89,20 @@ export const Navbar: React.FC<NavbarProps> = ({
         </a>
 
         {/* Desktop Navigation */}
-        <nav id="desktop-nav" className="hidden md:flex items-center gap-6 lg:gap-8">
+        <nav id="desktop-nav" className="hidden md:flex items-center gap-5 lg:gap-7">
           {navLinks.map((link) => (
             <a
               key={link.label}
               href={link.href}
-              className="text-xs sm:text-sm font-bold text-[#004D25] hover:text-[#FF6E14] transition-colors tracking-wide relative group py-1"
+              className={`text-xs sm:text-sm font-bold transition-colors tracking-wide relative group py-1 flex items-center gap-1 ${
+                (link as any).isPromo
+                  ? 'text-[#FF6E14] hover:text-[#E05300]'
+                  : 'text-[#004D25] hover:text-[#FF6E14]'
+              }`}
             >
+              {(link as any).isPromo && (
+                <span className="w-1.5 h-1.5 rounded-full bg-[#FF6E14] animate-ping inline-block"></span>
+              )}
               {link.label}
               <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#FF6E14] transition-all duration-300 group-hover:w-full"></span>
             </a>
@@ -100,30 +111,19 @@ export const Navbar: React.FC<NavbarProps> = ({
 
         {/* Right CTA Actions */}
         <div className="flex items-center gap-1.5 sm:gap-2.5">
-          {/* Admin manager toggle - ONLY visible when in admin mode */}
-          {isAdminMode && onOpenSettings && (
-            <div className="flex items-center gap-1">
-              <button
-                onClick={onOpenSettings}
-                id="settings-trigger-btn"
-                title="Panneau d'administration de la boutique"
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-white bg-[#004D25] hover:bg-[#00381B] transition-colors cursor-pointer border border-[#009E60]/40 shadow-xs active:scale-95 text-xs font-black ring-2 ring-[#FF6E14]/50"
-                aria-label="Modifier la boutique manuellement"
-              >
-                <SlidersHorizontal className="w-3.5 h-3.5 text-[#FF6E14]" />
-                <span className="inline">Admin</span>
-              </button>
-
-              {onExitAdmin && (
-                <button
-                  onClick={onExitAdmin}
-                  title="Quitter le mode administrateur"
-                  className="px-2 py-1.5 rounded-lg text-xs font-semibold text-gray-500 hover:text-red-600 hover:bg-red-50 border border-gray-200"
-                >
-                  ✕
-                </button>
-              )}
-            </div>
+          {/* Admin / Store Manager button - Always accessible */}
+          {onOpenSettings && (
+            <button
+              onClick={onOpenSettings}
+              id="settings-trigger-btn"
+              title="Gérer la boutique (Bannières, Produits, Prix, WhatsApp)"
+              className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl text-[#004D25] bg-orange-100/80 hover:bg-[#FF6E14] hover:text-white transition-all cursor-pointer border border-orange-300 shadow-xs active:scale-95 text-xs font-black"
+              aria-label="Gérer la boutique"
+            >
+              <SlidersHorizontal className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Gérer boutique</span>
+              <span className="sm:hidden">Admin</span>
+            </button>
           )}
 
           {/* Desktop & Mobile WhatsApp CTA */}
@@ -167,22 +167,31 @@ export const Navbar: React.FC<NavbarProps> = ({
                 key={link.label}
                 href={link.href}
                 onClick={() => setMobileMenuOpen(false)}
-                className="text-sm font-bold text-[#004D25] hover:text-[#FF6E14] hover:bg-orange-50/80 px-3 py-2 rounded-xl transition-all"
+                className={`text-sm font-bold px-3 py-2 rounded-xl transition-all ${
+                  (link as any).isPromo
+                    ? 'text-[#FF6E14] bg-orange-50 font-black flex items-center justify-between'
+                    : 'text-[#004D25] hover:text-[#FF6E14] hover:bg-orange-50/80'
+                }`}
               >
-                {link.label}
+                <span>{link.label}</span>
+                {(link as any).isPromo && (
+                  <span className="text-[10px] bg-[#FF6E14] text-white px-2 py-0.5 rounded-full uppercase">
+                    Offre
+                  </span>
+                )}
               </a>
             ))}
 
-            {isAdminMode && onOpenSettings && (
+            {onOpenSettings && (
               <button
                 onClick={() => {
                   setMobileMenuOpen(false);
                   onOpenSettings();
                 }}
-                className="w-full text-left text-sm font-bold text-white bg-[#004D25] hover:bg-[#00381B] px-3 py-2 rounded-xl transition-all flex items-center gap-2 mt-1"
+                className="w-full text-left text-sm font-black text-white bg-[#004D25] hover:bg-[#00381B] px-3 py-2.5 rounded-xl transition-all flex items-center gap-2 mt-2 shadow-sm"
               >
                 <SlidersHorizontal className="w-4 h-4 text-[#FF6E14]" />
-                <span>⚙️ Panneau Admin (Mode Actif)</span>
+                <span>⚙️ Gérer la boutique & Promos</span>
               </button>
             )}
           </div>

@@ -265,6 +265,19 @@ export default function App() {
         customPhone={storeConfig.phoneRaw}
       />
 
+      {/* Floating Store & Promo Manager Trigger (Bottom Left) */}
+      <div className="fixed bottom-4 left-4 z-40 hidden sm:block">
+        <button
+          onClick={() => setIsAdminOpen(true)}
+          id="floating-admin-btn"
+          className="flex items-center gap-2 bg-[#004D25] hover:bg-[#00381B] text-white px-3.5 py-2.5 rounded-2xl shadow-xl border-2 border-orange-300 transition-all hover:scale-105 active:scale-95 text-xs font-black cursor-pointer group"
+          title="Ouvrir la gestion des bannières, promotions, catalogue et coordonnées"
+        >
+          <span className="w-2 h-2 rounded-full bg-[#FF6E14] animate-ping group-hover:scale-125"></span>
+          <span>⚙️ Gérer Boutique & Promos</span>
+        </button>
+      </div>
+
       {/* 13. Product Quick-View Modal (Fiche Rapide) */}
       <ProductModal
         product={selectedProduct}
