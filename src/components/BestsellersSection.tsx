@@ -6,11 +6,13 @@ import { formatFCFA, buildProductWhatsAppUrl } from '../utils/whatsapp';
 interface BestsellersSectionProps {
   products: Product[];
   onOpenQuickView: (product: Product) => void;
+  customPhone?: string;
 }
 
 export const BestsellersSection: React.FC<BestsellersSectionProps> = ({
   products,
   onOpenQuickView,
+  customPhone,
 }) => {
   const bestsellers = products.filter((p) => p.bestseller || p.featured).slice(0, 3);
 
@@ -100,7 +102,7 @@ export const BestsellersSection: React.FC<BestsellersSectionProps> = ({
                   </div>
 
                   <a
-                    href={buildProductWhatsAppUrl({ product: item })}
+                    href={buildProductWhatsAppUrl({ product: item, customPhone })}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center gap-2 bg-[#FF6E14] hover:bg-[#E05300] text-white font-black text-xs sm:text-sm py-2.5 px-4 rounded-xl shadow-md transition-all hover:scale-105 active:scale-95 whitespace-nowrap border-2 border-white"

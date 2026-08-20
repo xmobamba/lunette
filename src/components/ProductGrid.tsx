@@ -9,6 +9,7 @@ interface ProductGridProps {
   onOpenQuickView: (product: Product) => void;
   favorites: string[];
   onToggleFavorite: (id: string) => void;
+  customPhone?: string;
 }
 
 export const ProductGrid: React.FC<ProductGridProps> = ({
@@ -16,6 +17,7 @@ export const ProductGrid: React.FC<ProductGridProps> = ({
   onOpenQuickView,
   favorites,
   onToggleFavorite,
+  customPhone,
 }) => {
   const [selectedCategory, setSelectedCategory] = useState<ProductCategory>('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -108,6 +110,7 @@ export const ProductGrid: React.FC<ProductGridProps> = ({
                 onOpenQuickView={onOpenQuickView}
                 isFavorite={favorites.includes(product.id)}
                 onToggleFavorite={onToggleFavorite}
+                customPhone={customPhone}
               />
             ))}
           </div>

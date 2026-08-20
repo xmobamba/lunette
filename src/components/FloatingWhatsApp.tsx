@@ -5,9 +5,10 @@ import { STORE_CONFIG } from '../config/store';
 
 interface FloatingWhatsAppProps {
   favoriteCount?: number;
+  customPhone?: string;
 }
 
-export const FloatingWhatsApp: React.FC<FloatingWhatsAppProps> = ({ favoriteCount = 0 }) => {
+export const FloatingWhatsApp: React.FC<FloatingWhatsAppProps> = ({ favoriteCount = 0, customPhone }) => {
   const [showBubble, setShowBubble] = useState(true);
   const [activeTab, setActiveTab] = useState<'home' | 'collection' | 'bestsellers' | 'reviews'>('home');
 
@@ -67,7 +68,7 @@ export const FloatingWhatsApp: React.FC<FloatingWhatsAppProps> = ({ favoriteCoun
         {/* Desktop Round Floating Button */}
         <a
           id="desktop-whatsapp-btn"
-          href={buildGeneralWhatsAppUrl('general')}
+          href={buildGeneralWhatsAppUrl('general', customPhone)}
           target="_blank"
           rel="noopener noreferrer"
           className="relative group flex items-center gap-2.5 bg-[#009E60] hover:bg-[#008552] text-white font-black px-5 py-3.5 rounded-full shadow-2xl hover:scale-105 active:scale-95 transition-all border-2 border-white"
@@ -113,7 +114,7 @@ export const FloatingWhatsApp: React.FC<FloatingWhatsAppProps> = ({ favoriteCoun
         <div className="relative -top-3.5">
           <a
             id="mobile-center-whatsapp-btn"
-            href={buildGeneralWhatsAppUrl('general')}
+            href={buildGeneralWhatsAppUrl('general', customPhone)}
             target="_blank"
             rel="noopener noreferrer"
             className="flex flex-col items-center justify-center w-14 h-14 rounded-full bg-[#009E60] hover:bg-[#008552] text-white shadow-xl shadow-green-600/40 border-4 border-white active:scale-90 transition-transform cursor-pointer"

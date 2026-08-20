@@ -83,7 +83,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             <div className="font-black text-[#FF6E14] flex items-center gap-1.5">
               <span>🇨🇮 Exemples :</span>
             </div>
-            <div className="font-semibold">• Côte d'Ivoire : 2250701020304</div>
+            <div className="font-semibold">• Côte d'Ivoire : 22508481012</div>
             <div className="font-semibold">• France : 33612345678</div>
           </div>
 

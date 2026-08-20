@@ -1,14 +1,22 @@
 import React, { useState, useEffect } from 'react';
-import { MessageCircle, Menu, X, Sparkles, SlidersHorizontal } from 'lucide-react';
+import { MessageCircle, Menu, X, Sparkles, SlidersHorizontal, Settings } from 'lucide-react';
+import { StoreConfig } from '../types';
 import { STORE_CONFIG } from '../config/store';
 import { buildGeneralWhatsAppUrl } from '../utils/whatsapp';
 
 interface NavbarProps {
   onOpenSettings?: () => void;
   favoritesCount?: number;
+  storeConfig?: StoreConfig;
+  customPhone?: string;
 }
 
-export const Navbar: React.FC<NavbarProps> = ({ onOpenSettings, favoritesCount = 0 }) => {
+export const Navbar: React.FC<NavbarProps> = ({
+  onOpenSettings,
+  favoritesCount = 0,
+  storeConfig = STORE_CONFIG,
+  customPhone,
+}) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -64,7 +72,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSettings, favoritesCount =
           </div>
           <div className="flex flex-col">
             <span className="font-serif text-sm sm:text-lg font-black tracking-wide text-[#FF6E14] leading-tight">
-              {STORE_CONFIG.storeName}
+              {storeConfig.storeName}
             </span>
             <span className="text-[8px] sm:text-[9px] tracking-widest uppercase font-bold text-[#009E60] leading-none">
               Abidjan • Eyewear
@@ -93,18 +101,19 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSettings, favoritesCount =
             <button
               onClick={onOpenSettings}
               id="settings-trigger-btn"
-              title="Personnaliser la boutique"
-              className="p-2 rounded-xl text-[#004D25] hover:text-[#FF6E14] hover:bg-orange-50 transition-colors cursor-pointer border border-orange-100 active:scale-95"
-              aria-label="Paramètres de la boutique"
+              title="Modifier les produits, prix et numéro"
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-[#004D25] hover:text-[#FF6E14] hover:bg-orange-50 transition-colors cursor-pointer border border-orange-200 bg-white shadow-2xs active:scale-95 text-xs font-bold"
+              aria-label="Modifier la boutique manuellement"
             >
-              <SlidersHorizontal className="w-4 h-4" />
+              <SlidersHorizontal className="w-3.5 h-3.5 text-[#FF6E14]" />
+              <span className="hidden sm:inline">Gérer boutique</span>
             </button>
           )}
 
           {/* Desktop & Mobile WhatsApp CTA */}
           <a
             id="nav-whatsapp-cta"
-            href={buildGeneralWhatsAppUrl('general')}
+            href={buildGeneralWhatsAppUrl('general', customPhone)}
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center gap-1.5 bg-[#009E60] hover:bg-[#008552] text-white font-black text-xs sm:text-sm py-1.5 sm:py-2 px-3 sm:px-4 rounded-xl shadow-sm hover:shadow-md transition-all active:scale-95 border border-white/20"
@@ -147,11 +156,24 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSettings, favoritesCount =
                 {link.label}
               </a>
             ))}
+
+            {onOpenSettings && (
+              <button
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  onOpenSettings();
+                }}
+                className="w-full text-left text-sm font-bold text-[#FF6E14] bg-orange-50/80 hover:bg-orange-100 px-3 py-2 rounded-xl transition-all flex items-center gap-2 mt-1"
+              >
+                <SlidersHorizontal className="w-4 h-4 text-[#FF6E14]" />
+                <span>⚙️ Gérer produits, prix & WhatsApp</span>
+              </button>
+            )}
           </div>
 
           <div className="mt-3 pt-3 border-t border-orange-100">
             <a
-              href={buildGeneralWhatsAppUrl('general')}
+              href={buildGeneralWhatsAppUrl('general', customPhone)}
               target="_blank"
               rel="noopener noreferrer"
               onClick={() => setMobileMenuOpen(false)}

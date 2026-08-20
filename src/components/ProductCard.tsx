@@ -8,6 +8,7 @@ interface ProductCardProps {
   onOpenQuickView: (product: Product) => void;
   isFavorite?: boolean;
   onToggleFavorite?: (productId: string) => void;
+  customPhone?: string;
 }
 
 const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1511499767150-a48a237f0083?auto=format&fit=crop&w=800&q=80';
@@ -17,6 +18,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
   onOpenQuickView,
   isFavorite = false,
   onToggleFavorite,
+  customPhone,
 }) => {
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [imgSrc, setImgSrc] = useState(product.images[0] || FALLBACK_IMAGE);
@@ -177,6 +179,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
             href={buildProductWhatsAppUrl({
               product,
               selectedColor: product.colors[activeImageIndex] || product.colors[0],
+              customPhone,
             })}
             target="_blank"
             rel="noopener noreferrer"

@@ -21,6 +21,7 @@ interface ProductModalProps {
   onClose: () => void;
   isFavorite?: boolean;
   onToggleFavorite?: (id: string) => void;
+  customPhone?: string;
 }
 
 export const ProductModal: React.FC<ProductModalProps> = ({
@@ -29,6 +30,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({
   onClose,
   isFavorite = false,
   onToggleFavorite,
+  customPhone,
 }) => {
   if (!isOpen || !product) return null;
 
@@ -62,6 +64,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({
       product,
       selectedColor,
       quantity,
+      customPhone,
     });
     window.open(url, '_blank');
   };
@@ -276,14 +279,24 @@ export const ProductModal: React.FC<ProductModalProps> = ({
                 </div>
               </div>
 
-              {/* Key Features */}
-              <div className="space-y-1.5 mb-4 pt-2 border-t border-orange-100">
-                {product.features.map((feat, i) => (
-                  <div key={i} className="flex items-center gap-2 text-xs text-[#004D25] font-semibold">
+              {/* Key Features & Specs */}
+              <div className="space-y-2 mb-4 pt-3 border-t border-orange-100">
+                {product.specs?.uvProtection && (
+                  <div className="flex items-center gap-2 text-xs text-[#004D25] font-semibold">
                     <Check className="w-3.5 h-3.5 text-[#009E60] shrink-0" />
-                    <span>{feat}</span>
+                    <span>Protection : {product.specs.uvProtection}</span>
                   </div>
-                ))}
+                )}
+                {product.specs?.frameMaterial && (
+                  <div className="flex items-center gap-2 text-xs text-[#004D25] font-semibold">
+                    <Check className="w-3.5 h-3.5 text-[#009E60] shrink-0" />
+                    <span>Monture : {product.specs.frameMaterial}</span>
+                  </div>
+                )}
+                <div className="flex items-center gap-2 text-xs text-[#004D25] font-semibold">
+                  <Check className="w-3.5 h-3.5 text-[#009E60] shrink-0" />
+                  <span>Livré avec étui de luxe et lingette microfibre</span>
+                </div>
               </div>
             </div>
           </div>

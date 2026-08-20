@@ -2,7 +2,11 @@ import React from 'react';
 import { MessageCircle, ArrowUp, Sparkles, ShieldCheck, Truck } from 'lucide-react';
 import { buildGeneralWhatsAppUrl } from '../utils/whatsapp';
 
-export const FinalCTA: React.FC = () => {
+interface FinalCTAProps {
+  customPhone?: string;
+}
+
+export const FinalCTA: React.FC<FinalCTAProps> = ({ customPhone }) => {
   return (
     <section id="final-cta" className="py-20 sm:py-28 bg-gradient-to-tr from-[#FF6E14] via-[#E65D07] to-[#009E60] text-white relative overflow-hidden">
       {/* Background luxury lights */}
@@ -34,7 +38,7 @@ export const FinalCTA: React.FC = () => {
 
           <a
             id="final-cta-whatsapp-btn"
-            href={buildGeneralWhatsAppUrl('general')}
+            href={buildGeneralWhatsAppUrl('general', customPhone)}
             target="_blank"
             rel="noopener noreferrer"
             className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-8 py-4 rounded-full bg-[#009E60] hover:bg-[#008552] text-white font-black text-sm tracking-wide shadow-2xl hover:scale-105 active:scale-95 transition-all border-2 border-white"

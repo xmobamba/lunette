@@ -4,8 +4,8 @@ export const STORE_CONFIG: StoreConfig = {
   storeName: "L'AURA EYEWEAR",
   tagline: "Lunettes de soleil tendance & haute couture",
   // Numéro WhatsApp par défaut (au format international sans espaces/plus pour wa.me)
-  phoneRaw: "2250701020304", // Remplaçable facilement
-  phoneDisplay: "+225 07 01 02 03 04",
+  phoneRaw: "22508481012",
+  phoneDisplay: "+225 08 48 10 12",
   city: "Abidjan",
   country: "Côte d'Ivoire",
   currency: "FCFA",

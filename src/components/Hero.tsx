@@ -2,7 +2,11 @@ import React from 'react';
 import { MessageCircle, ArrowDown, Sparkles, CheckCircle2, ShieldCheck, Star } from 'lucide-react';
 import { buildGeneralWhatsAppUrl } from '../utils/whatsapp';
 
-export const Hero: React.FC = () => {
+interface HeroProps {
+  customPhone?: string;
+}
+
+export const Hero: React.FC<HeroProps> = ({ customPhone }) => {
   return (
     <section id="top" className="relative min-h-[85vh] lg:min-h-screen bg-gradient-to-b from-orange-50/70 via-white to-green-50/30 text-[#004D25] flex items-center pt-24 sm:pt-28 pb-12 sm:pb-16 overflow-hidden">
       {/* Background soft ambient luxury glow (Orange & Green) */}
@@ -65,7 +69,7 @@ export const Hero: React.FC = () => {
               {/* Secondary WhatsApp CTA */}
               <a
                 id="hero-cta-whatsapp"
-                href={buildGeneralWhatsAppUrl('general')}
+                href={buildGeneralWhatsAppUrl('general', customPhone)}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-[#009E60] hover:bg-[#008552] text-white font-bold text-xs sm:text-sm tracking-wide shadow-md hover:shadow-green-600/30 active:scale-[0.98] transition-all border border-white"

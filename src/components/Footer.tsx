@@ -1,9 +1,18 @@
 import React from 'react';
+import { StoreConfig } from '../types';
 import { STORE_CONFIG } from '../config/store';
-import { Instagram, MessageCircle, Share2, MapPin, Phone, ShieldCheck, Heart } from 'lucide-react';
+import { Instagram, MessageCircle, Share2, MapPin, Phone, ShieldCheck, Heart, Settings, SlidersHorizontal } from 'lucide-react';
 import { buildGeneralWhatsAppUrl } from '../utils/whatsapp';
 
-export const Footer: React.FC = () => {
+interface FooterProps {
+  storeConfig?: StoreConfig;
+  customPhone?: string;
+  onOpenAdmin?: () => void;
+}
+
+export const Footer: React.FC<FooterProps> = ({ storeConfig = STORE_CONFIG, customPhone, onOpenAdmin }) => {
+  const displayPhone = customPhone || storeConfig.phoneDisplay;
+
   return (
     <footer id="main-footer" className="bg-[#004D25] text-white border-t-4 border-[#FF6E14] pt-16 pb-28 sm:pb-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
@@ -15,7 +24,7 @@ export const Footer: React.FC = () => {
                 <span className="text-[#FF6E14] font-serif font-black text-base">A</span>
               </div>
               <span className="font-serif text-2xl font-black tracking-[0.2em] text-white">
-                {STORE_CONFIG.storeName}
+                {storeConfig.storeName}
               </span>
             </div>
             <p className="text-xs sm:text-sm text-white/85 leading-relaxed max-w-sm mb-6 font-medium">
@@ -75,14 +84,24 @@ export const Footer: React.FC = () => {
             </h4>
             <div className="flex flex-col gap-3">
               <a
-                href={buildGeneralWhatsAppUrl('general')}
+                href={buildGeneralWhatsAppUrl('general', customPhone)}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#FF6E14] hover:bg-[#E05300] text-white font-black text-xs shadow-md transition-all border border-white/20"
               >
                 <MessageCircle className="w-4 h-4 fill-white" />
-                <span>WhatsApp : {STORE_CONFIG.phoneDisplay}</span>
+                <span>WhatsApp : {displayPhone}</span>
               </a>
+
+              {onOpenAdmin && (
+                <button
+                  onClick={onOpenAdmin}
+                  className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs border border-white/30 transition-all cursor-pointer mt-1"
+                >
+                  <SlidersHorizontal className="w-3.5 h-3.5 text-[#FF6E14]" />
+                  <span>⚙️ Modifier les produits & prix</span>
+                </button>
+              )}
 
               <div className="flex items-center gap-3 pt-2">
                 <a
@@ -119,7 +138,7 @@ export const Footer: React.FC = () => {
 
         {/* Bottom copyright line */}
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-white/80 font-medium">
-          <p>© 2026 {STORE_CONFIG.storeName} — Tous droits réservés.</p>
+          <p>© 2026 {storeConfig.storeName} — Tous droits réservés.</p>
           <div className="flex items-center gap-2">
             <span>Fait avec amour pour Abidjan 🇨🇮</span>
             <Heart className="w-3.5 h-3.5 text-[#FF6E14] fill-current" />

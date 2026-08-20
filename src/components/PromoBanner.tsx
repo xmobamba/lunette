@@ -1,10 +1,16 @@
 import React from 'react';
 import { MessageCircle, Sparkles, Gift, Clock, Truck } from 'lucide-react';
+import { StoreConfig } from '../types';
 import { STORE_CONFIG } from '../config/store';
 import { buildGeneralWhatsAppUrl } from '../utils/whatsapp';
 
-export const PromoBanner: React.FC = () => {
-  if (!STORE_CONFIG.isPromoActive) return null;
+interface PromoBannerProps {
+  storeConfig?: StoreConfig;
+  customPhone?: string;
+}
+
+export const PromoBanner: React.FC<PromoBannerProps> = ({ storeConfig = STORE_CONFIG, customPhone }) => {
+  if (!storeConfig.isPromoActive) return null;
 
   return (
     <section id="promo" className="py-10 bg-orange-50/70 border-y-2 border-orange-200 relative overflow-hidden">
@@ -22,7 +28,7 @@ export const PromoBanner: React.FC = () => {
             </div>
 
             <h3 className="font-serif text-2xl sm:text-3xl md:text-4xl font-black text-white tracking-tight leading-tight">
-              2 paires achetées = <span className="underline decoration-white/60 decoration-wavy">livraison offerte</span>
+              {storeConfig.promoText || "2 paires achetées = livraison offerte"}
             </h3>
 
             <p className="text-xs sm:text-sm text-white/95 mt-2 max-w-md font-medium">
@@ -30,7 +36,7 @@ export const PromoBanner: React.FC = () => {
             </p>
 
             <span className="text-[11px] text-white/80 mt-1 font-semibold">
-              {STORE_CONFIG.promoSubtext}
+              {storeConfig.promoSubtext || "*Selon zone de livraison à Abidjan."}
             </span>
           </div>
 
@@ -38,7 +44,7 @@ export const PromoBanner: React.FC = () => {
           <div className="shrink-0 flex flex-col items-center gap-2.5">
             <a
               id="promo-cta-whatsapp"
-              href={buildGeneralWhatsAppUrl('promo')}
+              href={buildGeneralWhatsAppUrl('promo', customPhone)}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center justify-center gap-2.5 px-8 py-4 rounded-full bg-white hover:bg-green-50 text-[#009E60] font-black text-sm sm:text-base tracking-wide shadow-2xl hover:scale-105 active:scale-95 transition-all border-2 border-white"
