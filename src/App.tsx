@@ -51,69 +51,40 @@ export default function App() {
     }
   });
 
-  // 4. Selection, Favorites, and Secret Admin Mode
+  // 4. Selection and Favorites
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isAdminOpen, setIsAdminOpen] = useState(false);
-  const [isAdminMode, setIsAdminMode] = useState<boolean>(() => {
-    try {
-      const urlParams = new URLSearchParams(window.location.search);
-      const hasAdminParam = urlParams.get('admin') === 'true' || urlParams.get('admin') === '1' || urlParams.get('mode') === 'admin';
-      const hasAdminHash = window.location.hash === '#admin';
-      const hasAdminSession = sessionStorage.getItem('aura_admin_mode') === 'true';
-      return hasAdminParam || hasAdminHash || hasAdminSession;
-    } catch {
-      return false;
-    }
-  });
 
-  // Check URL on load to auto-open if specifically requested via URL
+  // Check URL on load or keyboard shortcut to open Admin Panel (e.g. #admin or Ctrl+Shift+A)
   useEffect(() => {
     try {
-      const urlParams = new URLSearchParams(window.location.search);
-      if (urlParams.get('admin') === 'true' || urlParams.get('admin') === '1' || window.location.hash === '#admin') {
-        setIsAdminMode(true);
-        setIsAdminOpen(true);
-        sessionStorage.setItem('aura_admin_mode', 'true');
-      }
-
-      const handleHashChange = () => {
-        if (window.location.hash === '#admin') {
-          setIsAdminMode(true);
+      const checkAdminInUrl = () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('admin') === 'true' || urlParams.get('admin') === '1' || window.location.hash === '#admin') {
           setIsAdminOpen(true);
-          sessionStorage.setItem('aura_admin_mode', 'true');
         }
       };
 
-      window.addEventListener('hashchange', handleHashChange);
-      return () => window.removeEventListener('hashchange', handleHashChange);
+      checkAdminInUrl();
+      window.addEventListener('hashchange', checkAdminInUrl);
+
+      // Shortcut: Ctrl+Shift+A or Cmd+Shift+A to open Admin Manager
+      const handleKeyDown = (e: KeyboardEvent) => {
+        if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'A' || e.key === 'a')) {
+          e.preventDefault();
+          setIsAdminOpen(true);
+        }
+      };
+      window.addEventListener('keydown', handleKeyDown);
+
+      return () => {
+        window.removeEventListener('hashchange', checkAdminInUrl);
+        window.removeEventListener('keydown', handleKeyDown);
+      };
     } catch {
       // ignore
     }
   }, []);
-
-  const handleActivateAdmin = () => {
-    setIsAdminMode(true);
-    setIsAdminOpen(true);
-    try {
-      sessionStorage.setItem('aura_admin_mode', 'true');
-    } catch (e) {
-      console.error(e);
-    }
-  };
-
-  const handleExitAdmin = () => {
-    setIsAdminMode(false);
-    setIsAdminOpen(false);
-    try {
-      sessionStorage.removeItem('aura_admin_mode');
-      if (window.location.search.includes('admin') || window.location.hash === '#admin') {
-        const newUrl = window.location.pathname;
-        window.history.replaceState({}, '', newUrl);
-      }
-    } catch (e) {
-      console.error(e);
-    }
-  };
 
   const [favorites, setFavorites] = useState<string[]>(() => {
     try {
@@ -172,39 +143,11 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-[#FAF8F5] text-[#18261F] font-sans antialiased selection:bg-[#C85A17] selection:text-white">
-      {/* Admin Mode Bar Indicator (visible only to admin) */}
-      {isAdminMode && (
-        <div className="bg-[#18261F] text-white text-xs py-1.5 px-4 sticky top-0 z-50 flex items-center justify-between border-b border-[#C85A17]/60">
-          <div className="flex items-center gap-2 font-bold">
-            <span className="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-            <span>🔐 Mode Administrateur Actif</span>
-            <span className="hidden sm:inline text-white/70 font-normal">• Les clients ne voient pas ce panneau</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setIsAdminOpen(true)}
-              className="bg-[#C85A17] hover:bg-[#A84A12] text-white px-2.5 py-0.5 rounded text-[11px] font-bold cursor-pointer shadow-xs transition-colors"
-            >
-              Gérer la boutique
-            </button>
-            <button
-              onClick={handleExitAdmin}
-              className="text-white/80 hover:text-white hover:bg-white/10 px-2 py-0.5 rounded text-[11px] font-medium"
-            >
-              Quitter
-            </button>
-          </div>
-        </div>
-      )}
-
       {/* 1. Header / Navbar */}
       <Navbar
-        onOpenSettings={() => setIsAdminOpen(true)}
-        onExitAdmin={handleExitAdmin}
         favoritesCount={favorites.length}
         storeConfig={storeConfig}
         customPhone={storeConfig.phoneRaw}
-        isAdminMode={isAdminMode}
       />
 
       <main className="pb-20 sm:pb-0">
@@ -250,13 +193,11 @@ export default function App() {
         <FinalCTA customPhone={storeConfig.phoneRaw} />
       </main>
 
-      {/* 11. Footer */}
+      {/* 11. Footer with Secret 3-Click Admin Trigger */}
       <Footer
         storeConfig={storeConfig}
         customPhone={storeConfig.phoneRaw}
         onOpenAdmin={() => setIsAdminOpen(true)}
-        isAdminMode={isAdminMode}
-        onSecretAdminUnlock={handleActivateAdmin}
       />
 
       {/* 12. Floating Desktop & Sticky Mobile WhatsApp Triggers */}
@@ -264,21 +205,6 @@ export default function App() {
         favoriteCount={favorites.length}
         customPhone={storeConfig.phoneRaw}
       />
-
-      {/* Floating Store & Promo Manager Trigger (Bottom Left - Admin Only) */}
-      {isAdminMode && (
-        <div className="fixed bottom-4 left-4 z-40 hidden sm:block">
-          <button
-            onClick={() => setIsAdminOpen(true)}
-            id="floating-admin-btn"
-            className="flex items-center gap-2 bg-[#18261F] hover:bg-[#25392F] text-[#FAF8F5] px-3.5 py-2.5 rounded-2xl shadow-lg border border-[#C85A17]/40 transition-all hover:scale-105 active:scale-95 text-xs font-bold cursor-pointer group backdrop-blur-md"
-            title="Ouvrir la gestion des bannières, promotions, catalogue et coordonnées"
-          >
-            <span className="w-2 h-2 rounded-full bg-[#C85A17] animate-pulse"></span>
-            <span>⚙️ Gérer Boutique & Promos</span>
-          </button>
-        </div>
-      )}
 
       {/* 13. Product Quick-View Modal (Fiche Rapide) */}
       <ProductModal
@@ -292,7 +218,12 @@ export default function App() {
       {/* 14. Full Manual Store & Product Management Dashboard */}
       <AdminManagerModal
         isOpen={isAdminOpen}
-        onClose={() => setIsAdminOpen(false)}
+        onClose={() => {
+          setIsAdminOpen(false);
+          if (window.location.hash === '#admin') {
+            window.history.replaceState({}, '', window.location.pathname);
+          }
+        }}
         products={products}
         onUpdateProducts={handleUpdateProducts}
         storeConfig={storeConfig}

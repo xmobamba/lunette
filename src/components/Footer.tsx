@@ -1,23 +1,19 @@
 import React, { useState } from 'react';
 import { StoreConfig } from '../types';
 import { STORE_CONFIG } from '../config/store';
-import { Instagram, MessageCircle, Share2, MapPin, Heart, SlidersHorizontal } from 'lucide-react';
+import { Instagram, MessageCircle, Share2, MapPin, Heart } from 'lucide-react';
 import { buildGeneralWhatsAppUrl } from '../utils/whatsapp';
 
 interface FooterProps {
   storeConfig?: StoreConfig;
   customPhone?: string;
   onOpenAdmin?: () => void;
-  isAdminMode?: boolean;
-  onSecretAdminUnlock?: () => void;
 }
 
 export const Footer: React.FC<FooterProps> = ({
   storeConfig = STORE_CONFIG,
   customPhone,
   onOpenAdmin,
-  isAdminMode = false,
-  onSecretAdminUnlock,
 }) => {
   const displayPhone = customPhone || storeConfig.phoneDisplay;
   const [clickCount, setClickCount] = useState(0);
@@ -28,8 +24,8 @@ export const Footer: React.FC<FooterProps> = ({
 
     if (nextCount >= 3) {
       setClickCount(0);
-      if (onSecretAdminUnlock) {
-        onSecretAdminUnlock();
+      if (onOpenAdmin) {
+        onOpenAdmin();
       }
     }
 
@@ -117,16 +113,6 @@ export const Footer: React.FC<FooterProps> = ({
                 <MessageCircle className="w-4 h-4 fill-white" />
                 <span>WhatsApp : {displayPhone}</span>
               </a>
-
-              {isAdminMode && onOpenAdmin && (
-                <button
-                  onClick={onOpenAdmin}
-                  className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-[#C85A17] hover:bg-[#A84A12] text-white font-bold text-xs border border-white/20 transition-all cursor-pointer mt-1 shadow-2xs active:scale-95"
-                >
-                  <SlidersHorizontal className="w-3.5 h-3.5 text-white" />
-                  <span>⚙️ Gérer la boutique & Promos</span>
-                </button>
-              )}
 
               <div className="flex items-center gap-3 pt-2">
                 <a

@@ -1,25 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { MessageCircle, Menu, X, Sparkles, SlidersHorizontal, Settings } from 'lucide-react';
+import { MessageCircle, Menu, X, Sparkles } from 'lucide-react';
 import { StoreConfig } from '../types';
 import { STORE_CONFIG } from '../config/store';
 import { buildGeneralWhatsAppUrl } from '../utils/whatsapp';
 
 interface NavbarProps {
-  onOpenSettings?: () => void;
-  onExitAdmin?: () => void;
   favoritesCount?: number;
   storeConfig?: StoreConfig;
   customPhone?: string;
-  isAdminMode?: boolean;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
-  onOpenSettings,
-  onExitAdmin,
   favoritesCount = 0,
   storeConfig = STORE_CONFIG,
   customPhone,
-  isAdminMode = false,
 }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -111,21 +105,6 @@ export const Navbar: React.FC<NavbarProps> = ({
 
         {/* Right CTA Actions */}
         <div className="flex items-center gap-1.5 sm:gap-2.5">
-          {/* Admin / Store Manager button - Shown ONLY when in Admin Mode */}
-          {isAdminMode && onOpenSettings && (
-            <button
-              onClick={onOpenSettings}
-              id="settings-trigger-btn"
-              title="Gérer la boutique (Bannières, Produits, Prix, WhatsApp)"
-              className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl text-white bg-[#C85A17] hover:bg-[#A84A12] transition-all cursor-pointer border border-[#E8D4C0]/40 shadow-2xs active:scale-95 text-xs font-bold"
-              aria-label="Gérer la boutique"
-            >
-              <SlidersHorizontal className="w-3.5 h-3.5 text-white" />
-              <span className="hidden sm:inline">Gérer boutique</span>
-              <span className="sm:hidden">Admin</span>
-            </button>
-          )}
-
           {/* Desktop & Mobile WhatsApp CTA */}
           <a
             id="nav-whatsapp-cta"
@@ -181,19 +160,6 @@ export const Navbar: React.FC<NavbarProps> = ({
                 )}
               </a>
             ))}
-
-            {isAdminMode && onOpenSettings && (
-              <button
-                onClick={() => {
-                  setMobileMenuOpen(false);
-                  onOpenSettings();
-                }}
-                className="w-full text-left text-sm font-bold text-white bg-[#C85A17] hover:bg-[#A84A12] px-3 py-2.5 rounded-xl transition-all flex items-center gap-2 mt-2 shadow-xs"
-              >
-                <SlidersHorizontal className="w-4 h-4 text-white" />
-                <span>⚙️ Gérer la boutique & Promos</span>
-              </button>
-            )}
           </div>
 
           <div className="mt-3 pt-3 border-t border-[#E8E1D7]">
