@@ -1,22 +1,28 @@
 import React, { useState, useEffect } from 'react';
-import { MessageCircle, Menu, X, Sparkles } from 'lucide-react';
-import { StoreConfig } from '../types';
+import { MessageCircle, Menu, X, Sparkles, Flame, Tag } from 'lucide-react';
+import { StoreConfig, PromoBannerItem } from '../types';
 import { STORE_CONFIG } from '../config/store';
+import { DEFAULT_PROMOS } from '../data/promos';
 import { buildGeneralWhatsAppUrl } from '../utils/whatsapp';
 
 interface NavbarProps {
   favoritesCount?: number;
   storeConfig?: StoreConfig;
   customPhone?: string;
+  promos?: PromoBannerItem[];
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
   favoritesCount = 0,
   storeConfig = STORE_CONFIG,
   customPhone,
+  promos = DEFAULT_PROMOS,
 }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [topPromoIndex, setTopPromoIndex] = useState(0);
+
+  const activeTopPromos = promos.filter((p) => p.isActive);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -25,6 +31,17 @@ export const Navbar: React.FC<NavbarProps> = ({
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  // Rotate top announcement every 4.5 seconds
+  useEffect(() => {
+    if (activeTopPromos.length <= 1) return;
+    const interval = setInterval(() => {
+      setTopPromoIndex((prev) => (prev + 1) % activeTopPromos.length);
+    }, 4500);
+    return () => clearInterval(interval);
+  }, [activeTopPromos.length]);
+
+  const currentTopPromo = activeTopPromos[topPromoIndex] || activeTopPromos[0];
 
   const navLinks = [
     { label: 'Accueil', href: '#top' },
@@ -57,12 +74,21 @@ export const Navbar: React.FC<NavbarProps> = ({
           <span>Boutique en ligne officielle • Abidjan, Côte d'Ivoire</span>
         </div>
         <div className="flex items-center gap-4 font-semibold">
-          <a href="#promo" className="text-[#C85A17] hover:underline flex items-center gap-1 font-bold">
-            <span className="bg-[#FAF0E6] text-[#C85A17] border border-[#ECD7C2] text-[9px] px-1.5 py-0.2 rounded-full font-bold">PROMOS</span>
-            <span>🇨🇮 Offres spéciales Abidjan en cours</span>
+          <a 
+            href="#promo" 
+            className="text-[#C85A17] hover:underline flex items-center gap-1.5 font-bold transition-all duration-300"
+          >
+            <span className="bg-[#FAF0E6] text-[#C85A17] border border-[#ECD7C2] text-[9px] px-2 py-0.5 rounded-full font-extrabold flex items-center gap-1 shadow-2xs">
+              <Flame className="w-2.5 h-2.5 fill-[#C85A17]" />
+              <span>{currentTopPromo?.discountTag || 'PROMO'}</span>
+            </span>
+            <span className="truncate max-w-[340px] font-bold text-[#18261F] hover:text-[#C85A17]">
+              {currentTopPromo?.title || "Offres spéciales Abidjan en cours"}
+            </span>
+            <span className="text-[10px] text-[#C85A17] font-extrabold">→ Voir l'offre</span>
           </a>
           <span className="text-[#D8CFBF]">•</span>
-          <span className="text-[#1E6B48]">Paiement sécurisé à la livraison (Cash / Wave / OM)</span>
+          <span className="text-[#1E6B48] font-medium">Paiement sécurisé à la livraison (Cash / Wave / OM)</span>
         </div>
       </div>
 

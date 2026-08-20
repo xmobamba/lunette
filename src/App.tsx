@@ -148,13 +148,21 @@ export default function App() {
         favoritesCount={favorites.length}
         storeConfig={storeConfig}
         customPhone={storeConfig.phoneRaw}
+        promos={promos}
       />
 
       <main className="pb-20 sm:pb-0">
         {/* 2. Hero Section */}
         <Hero customPhone={storeConfig.phoneRaw} />
 
-        {/* 3. Products Collection & Categories Grid */}
+        {/* 3. Next-Generation Promotional Banner Showcase (Immediately visible) */}
+        <PromoBanner
+          promos={promos}
+          storeConfig={storeConfig}
+          customPhone={storeConfig.phoneRaw}
+        />
+
+        {/* 4. Products Collection & Categories Grid */}
         <ProductGrid
           products={products}
           onOpenQuickView={(p) => setSelectedProduct(p)}
@@ -163,17 +171,10 @@ export default function App() {
           customPhone={storeConfig.phoneRaw}
         />
 
-        {/* 4. Best-sellers Highlight */}
+        {/* 5. Best-sellers Highlight */}
         <BestsellersSection
           products={products}
           onOpenQuickView={(p) => setSelectedProduct(p)}
-          customPhone={storeConfig.phoneRaw}
-        />
-
-        {/* 5. Special Promotional Banner */}
-        <PromoBanner
-          promos={promos}
-          storeConfig={storeConfig}
           customPhone={storeConfig.phoneRaw}
         />
 
