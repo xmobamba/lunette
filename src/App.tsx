@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { PRODUCTS } from './data/products';
 import { STORE_CONFIG } from './config/store';
-import { Product, StoreConfig } from './types';
+import { DEFAULT_PROMOS } from './data/promos';
+import { Product, StoreConfig, PromoBannerItem } from './types';
 import { Navbar } from './components/Navbar';
 import { Hero } from './components/Hero';
 import { ProductGrid } from './components/ProductGrid';
@@ -39,7 +40,18 @@ export default function App() {
     }
   });
 
-  // 3. Selection, Favorites, and Secret Admin Mode
+  // 3. Dynamic Promotional Banners State with localStorage persistence
+  const [promos, setPromos] = useState<PromoBannerItem[]>(() => {
+    try {
+      const saved = localStorage.getItem('aura_promos_v1');
+      if (saved) return JSON.parse(saved);
+      return DEFAULT_PROMOS;
+    } catch {
+      return DEFAULT_PROMOS;
+    }
+  });
+
+  // 4. Selection, Favorites, and Secret Admin Mode
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isAdminOpen, setIsAdminOpen] = useState(false);
   const [isAdminMode, setIsAdminMode] = useState<boolean>(() => {
@@ -148,6 +160,16 @@ export default function App() {
     }
   };
 
+  // Synchronize promotional banners updates
+  const handleUpdatePromos = (newPromos: PromoBannerItem[]) => {
+    setPromos(newPromos);
+    try {
+      localStorage.setItem('aura_promos_v1', JSON.stringify(newPromos));
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-white text-[#004D25] font-sans antialiased selection:bg-[#FF6E14] selection:text-white">
       {/* Admin Mode Bar Indicator (visible only to admin) */}
@@ -207,6 +229,7 @@ export default function App() {
 
         {/* 5. Special Promotional Banner */}
         <PromoBanner
+          promos={promos}
           storeConfig={storeConfig}
           customPhone={storeConfig.phoneRaw}
         />
@@ -259,6 +282,8 @@ export default function App() {
         onUpdateProducts={handleUpdateProducts}
         storeConfig={storeConfig}
         onUpdateStoreConfig={handleUpdateStoreConfig}
+        promos={promos}
+        onUpdatePromos={handleUpdatePromos}
       />
     </div>
   );

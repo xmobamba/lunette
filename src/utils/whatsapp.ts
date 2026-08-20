@@ -1,4 +1,4 @@
-import { Product, ProductColor } from '../types';
+import { Product, ProductColor, PromoBannerItem } from '../types';
 import { STORE_CONFIG } from '../config/store';
 import { trackAnalyticsEvent } from './analytics';
 
@@ -90,6 +90,28 @@ Je souhaite découvrir vos modèles best-sellers du moment et passer commande. M
   // Track event
   trackAnalyticsEvent('whatsapp_contact_click', {
     context,
+  });
+
+  return `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+}
+
+/**
+ * Génère un lien WhatsApp pour une bannière promotionnelle spécifique
+ */
+export function buildCustomPromoWhatsAppUrl(promo: PromoBannerItem, customPhone?: string): string {
+  const phone = getCleanPhoneNumber(customPhone);
+
+  const message = promo.whatsappMessage || `Bonjour 👋
+
+Je souhaite profiter de l'offre spéciale :
+✨ « ${promo.title} » ✨
+
+Pouvez-vous me donner plus de détails et me conseiller sur les modèles disponibles à Abidjan ? Merci !`;
+
+  trackAnalyticsEvent('whatsapp_promo_banner_click', {
+    promo_id: promo.id,
+    promo_title: promo.title,
+    promo_badge: promo.badge,
   });
 
   return `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;

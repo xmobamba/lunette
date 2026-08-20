@@ -60,6 +60,24 @@ export interface InstagramPost {
   link: string;
 }
 
+export type BannerTheme = 'orange' | 'green' | 'dark' | 'gold' | 'rose' | 'ocean';
+
+export interface PromoBannerItem {
+  id: string;
+  badge: string;
+  title: string;
+  description: string;
+  subtext?: string;
+  ctaText: string;
+  whatsappMessage?: string;
+  theme: BannerTheme;
+  discountTag?: string;
+  countdownText?: string;
+  image?: string;
+  isActive: boolean;
+  position?: 'main' | 'top_bar' | 'both';
+}
+
 export interface StoreConfig {
   storeName: string;
   tagline: string;
