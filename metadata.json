@@ -1,0 +1,6 @@
+{
+  "name": "AURA Eyewear Abidjan",
+  "description": "Boutique en ligne premium de lunettes de soleil tendance à Abidjan avec commande rapide sur WhatsApp.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
