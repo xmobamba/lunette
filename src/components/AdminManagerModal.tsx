@@ -153,37 +153,46 @@ export const AdminManagerModal: React.FC<AdminManagerModalProps> = ({
 
       for (let i = 0; i < filesList.length; i++) {
         const file = filesList[i];
-        if (!file.type.startsWith('image/')) continue;
-
-        const base64 = await fileToBase64(file, 900, 900, 0.82);
-        
-        // Check if there is a product without image to auto-assign
-        let targetProduct: Product | undefined;
-        for (let pIdx = 0; pIdx < updatedProducts.length; pIdx++) {
-          if (!updatedProducts[pIdx].images || updatedProducts[pIdx].images.length === 0) {
-            targetProduct = updatedProducts[pIdx];
-            updatedProducts[pIdx] = {
-              ...updatedProducts[pIdx],
-              images: [base64],
-            };
-            break;
+        try {
+          const base64 = await fileToBase64(file, 800, 800, 0.78);
+          if (!base64 || !base64.startsWith('data:image/')) {
+            continue;
           }
-        }
+          
+          // Check if there is a product without image to auto-assign
+          let targetProduct: Product | undefined;
+          for (let pIdx = 0; pIdx < updatedProducts.length; pIdx++) {
+            if (!updatedProducts[pIdx].images || updatedProducts[pIdx].images.length === 0) {
+              targetProduct = updatedProducts[pIdx];
+              updatedProducts[pIdx] = {
+                ...updatedProducts[pIdx],
+                images: [base64],
+              };
+              break;
+            }
+          }
 
-        const mediaItem: MediaImage = {
-          id: `media-${Date.now()}-${i}-${Math.random().toString(36).substring(2, 6)}`,
-          url: base64,
-          name: file.name.replace(/\.[^/.]+$/, '') || `Photo Lunettes ${i + 1}`,
-          createdAt: Date.now(),
-          assignedProductId: targetProduct?.id,
-          assignedProductName: targetProduct?.name,
-          isHero: false,
-        };
-        newItems.push(mediaItem);
+          const cleanName = file.name
+            ? file.name.replace(/\.[^/.]+$/, '').replace(/^file_/, 'Modèle ').substring(0, 30)
+            : `Photo Lunettes ${i + 1}`;
+
+          const mediaItem: MediaImage = {
+            id: `media-${Date.now()}-${i}-${Math.random().toString(36).substring(2, 6)}`,
+            url: base64,
+            name: cleanName || `Photo Lunettes ${i + 1}`,
+            createdAt: Date.now(),
+            assignedProductId: targetProduct?.id,
+            assignedProductName: targetProduct?.name,
+            isHero: false,
+          };
+          newItems.push(mediaItem);
+        } catch (fileErr) {
+          console.warn('Error reading single file:', file.name, fileErr);
+        }
       }
 
       if (newItems.length === 0) {
-        showToast('⚠️ Aucun fichier image valide trouvé.');
+        showToast('⚠️ Impossible de lire les images sélectionnées.');
         return;
       }
 
@@ -575,7 +584,7 @@ export const AdminManagerModal: React.FC<AdminManagerModalProps> = ({
         <input
           ref={photoInputRef}
           type="file"
-          accept="image/*"
+          accept="image/*,.jpg,.jpeg,.png,.webp,.jfif,.avif,.bmp,*"
           multiple
           onClick={(e) => e.stopPropagation()}
           onChange={handleMultiFileUpload}
@@ -584,7 +593,7 @@ export const AdminManagerModal: React.FC<AdminManagerModalProps> = ({
         <input
           ref={singleProductPhotoInputRef}
           type="file"
-          accept="image/*"
+          accept="image/*,.jpg,.jpeg,.png,.webp,.jfif,.avif,.bmp,*"
           onClick={(e) => e.stopPropagation()}
           onChange={handleSingleProductUpload}
           className="hidden"

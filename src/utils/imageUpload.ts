@@ -6,52 +6,77 @@ import { MediaImage, Product } from '../types';
 
 export async function fileToBase64(
   file: File,
-  maxWidth: number = 1000,
-  maxHeight: number = 1000,
-  quality: number = 0.85
+  maxWidth: number = 800,
+  maxHeight: number = 800,
+  quality: number = 0.78
 ): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = (e) => {
+      let rawResult = e.target?.result as string;
+      if (!rawResult) {
+        reject(new Error('Lecture du fichier vide'));
+        return;
+      }
+
+      // If the file has no mime type or octet-stream (e.g. extensionless WhatsApp files),
+      // ensure it can still be processed as an image
+      if (rawResult.startsWith('data:;') || rawResult.startsWith('data:application/octet-stream;') || rawResult.startsWith('data:binary/octet-stream;')) {
+        rawResult = rawResult.replace(/^data:[^;]*;/, 'data:image/jpeg;');
+      }
+
       const img = new Image();
       img.onload = () => {
-        const canvas = document.createElement('canvas');
-        let width = img.width;
-        let height = img.height;
+        try {
+          const canvas = document.createElement('canvas');
+          let width = img.naturalWidth || img.width;
+          let height = img.naturalHeight || img.height;
 
-        if (width > height) {
-          if (width > maxWidth) {
-            height = Math.round((height * maxWidth) / width);
-            width = maxWidth;
+          if (!width || !height) {
+            resolve(rawResult);
+            return;
           }
-        } else {
-          if (height > maxHeight) {
-            width = Math.round((width * maxHeight) / height);
-            height = maxHeight;
+
+          if (width > height) {
+            if (width > maxWidth) {
+              height = Math.round((height * maxWidth) / width);
+              width = maxWidth;
+            }
+          } else {
+            if (height > maxHeight) {
+              width = Math.round((width * maxHeight) / height);
+              height = maxHeight;
+            }
           }
+
+          canvas.width = width;
+          canvas.height = height;
+
+          const ctx = canvas.getContext('2d');
+          if (!ctx) {
+            resolve(rawResult);
+            return;
+          }
+
+          // Fill background with white for clean borders
+          ctx.fillStyle = '#FFFFFF';
+          ctx.fillRect(0, 0, width, height);
+          ctx.drawImage(img, 0, 0, width, height);
+
+          const dataUrl = canvas.toDataURL('image/jpeg', quality);
+          resolve(dataUrl);
+        } catch (canvasErr) {
+          console.warn('Canvas conversion fallback:', canvasErr);
+          resolve(rawResult);
         }
-
-        canvas.width = width;
-        canvas.height = height;
-
-        const ctx = canvas.getContext('2d');
-        if (!ctx) {
-          resolve(e.target?.result as string);
-          return;
-        }
-
-        // Fill background with white for transparency safety
-        ctx.fillStyle = '#FFFFFF';
-        ctx.fillRect(0, 0, width, height);
-        ctx.drawImage(img, 0, 0, width, height);
-
-        const dataUrl = canvas.toDataURL('image/jpeg', quality);
-        resolve(dataUrl);
       };
+
       img.onerror = () => {
-        resolve(e.target?.result as string);
+        // Try fallback with direct dataURL
+        resolve(rawResult);
       };
-      img.src = e.target?.result as string;
+
+      img.src = rawResult;
     };
     reader.onerror = (error) => reject(error);
     reader.readAsDataURL(file);
