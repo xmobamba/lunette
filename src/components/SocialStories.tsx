@@ -7,11 +7,8 @@ import {
   Sparkles, 
   Heart, 
   ShieldCheck, 
-  Flame, 
   ShoppingBag, 
-  Share2,
-  Camera,
-  Plus
+  Share2
 } from 'lucide-react';
 import { buildDirectMessageWhatsAppUrl, buildProductWhatsAppUrl } from '../utils/whatsapp';
 import { Product } from '../types';
@@ -42,7 +39,6 @@ interface SocialStoriesProps {
 export const SocialStories: React.FC<SocialStoriesProps> = ({
   customPhone,
   products = [],
-  onOpenAdmin,
 }) => {
   const [activeStoryIndex, setActiveStoryIndex] = useState<number | null>(null);
   const [activeSlideIndex, setActiveSlideIndex] = useState<number>(0);
@@ -174,22 +170,6 @@ export const SocialStories: React.FC<SocialStoriesProps> = ({
 
         {/* Stories Horizontal Carousel */}
         <div className="flex items-center gap-4 sm:gap-6 overflow-x-auto pb-2 scrollbar-none no-scrollbar">
-          
-          {/* Add story / Photo upload trigger pill */}
-          {onOpenAdmin && (
-            <button
-              onClick={onOpenAdmin}
-              className="flex flex-col items-center gap-1.5 shrink-0 group cursor-pointer"
-            >
-              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full border-2 border-dashed border-[#C85A17] flex items-center justify-center bg-[#FAF0E6] group-hover:scale-105 transition-transform shadow-2xs">
-                <Camera className="w-6 h-6 text-[#C85A17]" />
-              </div>
-              <span className="text-[11px] font-bold text-[#18261F] truncate max-w-[70px]">
-                + Mes Photos
-              </span>
-            </button>
-          )}
-
           {storiesData.length > 0 ? (
             storiesData.map((story, index) => (
               <button

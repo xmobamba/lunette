@@ -124,16 +124,6 @@ export const InstagramFeed: React.FC<InstagramFeedProps> = ({
                 <Instagram className="w-4 h-4" />
                 <span>Nous suivre sur Instagram</span>
               </a>
-
-              {onOpenAdmin && (
-                <button
-                  onClick={onOpenAdmin}
-                  className="inline-flex items-center gap-2 px-5 py-3 rounded-full bg-[#18261F] hover:bg-[#25392F] text-white font-bold text-xs sm:text-sm shadow-md hover:scale-105 active:scale-95 transition-all cursor-pointer"
-                >
-                  <Camera className="w-4 h-4 text-[#F4A261]" />
-                  <span>Gérer les photos</span>
-                </button>
-              )}
             </div>
           </div>
 

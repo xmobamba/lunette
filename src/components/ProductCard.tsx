@@ -1,8 +1,7 @@
-import React, { useState, useRef } from 'react';
-import { MessageCircle, Eye, Heart, Share2, Check, Flame, Sparkles, Camera, Upload, Plus } from 'lucide-react';
+import React, { useState } from 'react';
+import { MessageCircle, Eye, Heart, Share2, Check, Sparkles } from 'lucide-react';
 import { Product } from '../types';
 import { formatFCFA, buildProductWhatsAppUrl } from '../utils/whatsapp';
-import { fileToBase64 } from '../utils/imageUpload';
 
 interface ProductCardProps {
   product: Product;
@@ -19,16 +18,11 @@ export const ProductCard: React.FC<ProductCardProps> = ({
   isFavorite = false,
   onToggleFavorite,
   customPhone,
-  onUpdateProductImage,
 }) => {
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [likesCount, setLikesCount] = useState(() => 140 + (product.name.charCodeAt(0) % 80));
   const [hasLiked, setHasLiked] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
-  const [isUploading, setIsUploading] = useState(false);
-  const [isDragging, setIsDragging] = useState(false);
-
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const currentImage = product.images && product.images.length > 0 ? product.images[activeImageIndex] || product.images[0] : null;
 
@@ -80,124 +74,37 @@ export const ProductCard: React.FC<ProductCardProps> = ({
     }
   };
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    try {
-      setIsUploading(true);
-      const base64 = await fileToBase64(file);
-      if (onUpdateProductImage) {
-        onUpdateProductImage(product.id, base64);
-      }
-    } catch (err) {
-      console.error('Failed to upload image:', err);
-    } finally {
-      setIsUploading(false);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
-    }
-  };
-
-  const handleDrop = async (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(false);
-    const file = e.dataTransfer.files?.[0];
-    if (!file || !file.type.startsWith('image/')) return;
-
-    try {
-      setIsUploading(true);
-      const base64 = await fileToBase64(file);
-      if (onUpdateProductImage) {
-        onUpdateProductImage(product.id, base64);
-      }
-    } catch (err) {
-      console.error('Failed to drop image:', err);
-    } finally {
-      setIsUploading(false);
-    }
-  };
-
   return (
     <div
       id={`product-card-${product.id}`}
       className="group relative flex flex-col bg-white rounded-3xl border border-[#E8E1D7] hover:border-[#C85A17]/60 shadow-2xs hover:shadow-xl transition-all duration-300 overflow-hidden"
     >
-      {/* Hidden file input for fast upload */}
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept="image/*"
-        onChange={handleFileChange}
-        className="hidden"
-        id={`upload-input-${product.id}`}
-      />
-
-      {/* Product Image Stage / Upload Dropzone */}
+      {/* Product Image Stage */}
       <div
-        className={`relative aspect-4/5 w-full bg-[#FAF8F5] overflow-hidden cursor-pointer transition-colors ${
-          isDragging ? 'bg-[#FAF0E6] border-2 border-dashed border-[#C85A17]' : ''
-        }`}
+        className="relative aspect-4/5 w-full bg-[#FAF8F5] overflow-hidden cursor-pointer"
         onClick={() => onOpenQuickView(product)}
-        onDragOver={(e) => {
-          e.preventDefault();
-          setIsDragging(true);
-        }}
-        onDragLeave={() => setIsDragging(false)}
-        onDrop={handleDrop}
       >
         {currentImage ? (
-          <>
-            <img
-              src={currentImage}
-              alt={`${product.name} - Lunettes de soleil Abidjan`}
-              referrerPolicy="no-referrer"
-              className="w-full h-full object-cover object-center group-hover:scale-106 transition-transform duration-500 ease-out"
-              loading="lazy"
-            />
-
-            {/* Change Photo Overlay Button on Hover */}
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                fileInputRef.current?.click();
-              }}
-              title="Changer la photo du produit"
-              className="opacity-0 group-hover:opacity-100 absolute top-3 right-12 z-20 px-2.5 py-1 rounded-full bg-black/70 hover:bg-black text-white text-[10px] font-bold backdrop-blur-md flex items-center gap-1 transition-all shadow-md cursor-pointer"
-            >
-              <Camera className="w-3 h-3 text-[#F4A261]" />
-              <span className="hidden sm:inline">Changer</span>
-            </button>
-          </>
+          <img
+            src={currentImage}
+            alt={`${product.name} - Lunettes de soleil Abidjan`}
+            referrerPolicy="no-referrer"
+            className="w-full h-full object-cover object-center group-hover:scale-106 transition-transform duration-500 ease-out"
+            loading="lazy"
+          />
         ) : (
-          /* Empty Luxury Upload Dropzone */
-          <div
-            onClick={(e) => {
-              e.stopPropagation();
-              fileInputRef.current?.click();
-            }}
-            className="w-full h-full flex flex-col items-center justify-center p-6 text-center hover:bg-[#FAF0E6]/50 transition-colors"
-          >
-            <div className="w-14 h-14 rounded-2xl bg-[#FAF0E6] border border-[#E8D4C0] flex items-center justify-center text-[#C85A17] mb-3 group-hover:scale-110 transition-transform shadow-2xs">
-              {isUploading ? (
-                <div className="w-6 h-6 border-2 border-[#C85A17] border-t-transparent rounded-full animate-spin" />
-              ) : (
-                <Camera className="w-7 h-7" />
-              )}
+          /* Elegant Minimalist Sunglasses Silhouette */
+          <div className="w-full h-full flex flex-col items-center justify-center p-6 text-center bg-gradient-to-b from-[#FAF8F5] to-[#F5EFE6]">
+            <div className="w-14 h-14 rounded-2xl bg-[#FAF0E6] border border-[#E8D4C0] flex items-center justify-center text-[#C85A17] mb-3 group-hover:scale-105 transition-transform shadow-2xs">
+              <Sparkles className="w-7 h-7" />
             </div>
 
-            <span className="text-xs font-bold text-[#18261F] flex items-center gap-1">
-              <Plus className="w-3.5 h-3.5 text-[#C85A17]" />
-              <span>Ajouter votre photo</span>
+            <span className="text-xs font-bold text-[#18261F]">
+              {product.name}
             </span>
-            <p className="text-[10px] text-[#4A5850]/70 mt-1 max-w-[160px]">
-              Cliquez ou glissez une photo de ce modèle ici
+            <p className="text-[10px] text-[#4A5850]/70 mt-1 max-w-[140px]">
+              Protection UV400 • Abidjan
             </p>
-
-            <span className="mt-3 px-3 py-1 rounded-full bg-[#C85A17] hover:bg-[#A84A12] text-white text-[10px] font-bold shadow-xs">
-              Importer photo
-            </span>
           </div>
         )}
 

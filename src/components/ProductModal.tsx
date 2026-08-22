@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import { Product } from '../types';
 import {
   X,
@@ -11,12 +11,9 @@ import {
   ChevronRight,
   Heart,
   Plus,
-  Minus,
-  Camera,
-  Upload
+  Minus
 } from 'lucide-react';
 import { formatFCFA, buildProductWhatsAppUrl } from '../utils/whatsapp';
-import { fileToBase64 } from '../utils/imageUpload';
 
 interface ProductModalProps {
   product: Product | null;
@@ -35,7 +32,6 @@ export const ProductModal: React.FC<ProductModalProps> = ({
   isFavorite = false,
   onToggleFavorite,
   customPhone,
-  onUpdateProductImage,
 }) => {
   if (!isOpen || !product) return null;
 
@@ -46,8 +42,6 @@ export const ProductModal: React.FC<ProductModalProps> = ({
       : { name: 'Défaut', hex: '#FF6E14' }
   );
   const [quantity, setQuantity] = useState(1);
-  const [isUploading, setIsUploading] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const imagesList = product.images || [];
   const hasImages = imagesList.length > 0;
@@ -76,24 +70,6 @@ export const ProductModal: React.FC<ProductModalProps> = ({
     setActiveImageIndex((prev) => (prev - 1 + imagesList.length) % imagesList.length);
   };
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    try {
-      setIsUploading(true);
-      const base64 = await fileToBase64(file);
-      if (onUpdateProductImage) {
-        onUpdateProductImage(product.id, base64);
-      }
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setIsUploading(false);
-      if (fileInputRef.current) fileInputRef.current.value = '';
-    }
-  };
-
   const handleWhatsAppOrder = () => {
     const url = buildProductWhatsAppUrl({
       product,
@@ -110,14 +86,6 @@ export const ProductModal: React.FC<ProductModalProps> = ({
       className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4 bg-[#18261F]/60 backdrop-blur-xs animate-in fade-in duration-200"
       onClick={onClose}
     >
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept="image/*"
-        onChange={handleFileUpload}
-        className="hidden"
-      />
-
       <div
         id="product-modal-card"
         className="bg-white rounded-t-3xl sm:rounded-3xl border-t-2 sm:border border-[#C85A17] sm:border-[#E8E1D7] shadow-2xl w-full max-w-4xl max-h-[92vh] sm:max-h-[90vh] overflow-y-auto relative animate-in slide-in-from-bottom-6 sm:zoom-in-95 duration-200 text-[#18261F] flex flex-col"
@@ -139,48 +107,23 @@ export const ProductModal: React.FC<ProductModalProps> = ({
         </button>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-8 p-4 sm:p-8 pb-28 sm:pb-8 flex-1">
-          {/* Left Column: Image Gallery Slider / Upload Placeholder */}
+          {/* Left Column: Image Gallery Slider / Fallback */}
           <div className="flex flex-col gap-3">
             <div className="relative aspect-square rounded-2xl overflow-hidden bg-[#FAF8F5] border border-[#E8E1D7] shadow-inner flex items-center justify-center">
               {currentImage ? (
-                <>
-                  <img
-                    src={currentImage}
-                    alt={`${product.name} - Vue ${activeImageIndex + 1}`}
-                    className="w-full h-full object-cover object-center"
-                  />
-
-                  {/* Change photo button on hover */}
-                  <button
-                    onClick={() => fileInputRef.current?.click()}
-                    className="absolute top-3 right-3 z-20 px-2.5 py-1 rounded-full bg-black/70 hover:bg-black text-white text-[10px] font-bold backdrop-blur-md flex items-center gap-1 transition-all shadow-md cursor-pointer"
-                  >
-                    <Camera className="w-3 h-3 text-[#F4A261]" />
-                    <span>Changer la photo</span>
-                  </button>
-                </>
+                <img
+                  src={currentImage}
+                  alt={`${product.name} - Vue ${activeImageIndex + 1}`}
+                  className="w-full h-full object-cover object-center"
+                />
               ) : (
-                /* Empty Upload Zone */
-                <div
-                  onClick={() => fileInputRef.current?.click()}
-                  className="w-full h-full p-6 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-[#FAF0E6]/50 transition-colors"
-                >
-                  <div className="w-16 h-16 rounded-2xl bg-[#FAF0E6] border border-[#E8D4C0] flex items-center justify-center text-[#C85A17] mb-3">
-                    {isUploading ? (
-                      <div className="w-6 h-6 border-2 border-[#C85A17] border-t-transparent rounded-full animate-spin" />
-                    ) : (
-                      <Camera className="w-8 h-8" />
-                    )}
+                /* Fallback Luxury Card */
+                <div className="w-full h-full p-6 flex flex-col items-center justify-center text-center bg-gradient-to-b from-[#FAF8F5] to-[#F5EFE6]">
+                  <div className="w-16 h-16 rounded-2xl bg-[#FAF0E6] border border-[#E8D4C0] flex items-center justify-center text-[#C85A17] mb-3 shadow-2xs">
+                    <Sparkles className="w-8 h-8" />
                   </div>
-                  <span className="text-sm font-bold text-[#18261F]">Ajouter une photo pour ce modèle</span>
-                  <span className="text-xs text-[#4A5850] mt-1">Cliquez pour importer depuis votre appareil</span>
-                  <button
-                    type="button"
-                    className="mt-3 px-4 py-1.5 rounded-full bg-[#C85A17] text-white text-xs font-bold shadow-xs flex items-center gap-1"
-                  >
-                    <Upload className="w-3.5 h-3.5" />
-                    <span>Importer photo</span>
-                  </button>
+                  <span className="text-base font-bold text-[#18261F] font-serif">{product.name}</span>
+                  <span className="text-xs text-[#4A5850] mt-1">Protection UV400 • Haute Couture Abidjan</span>
                 </div>
               )}
 

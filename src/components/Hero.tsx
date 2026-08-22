@@ -1,24 +1,15 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   MessageCircle, 
   ArrowDown, 
   Sparkles, 
   CheckCircle2, 
   ShieldCheck, 
-  Star, 
   Instagram, 
-  Heart, 
-  Flame, 
-  ShoppingBag, 
-  Camera, 
-  Upload, 
-  Trash2, 
-  ChevronLeft, 
-  ChevronRight,
-  Plus
+  ShoppingBag
 } from 'lucide-react';
 import { buildGeneralWhatsAppUrl } from '../utils/whatsapp';
-import { getStoredHeroImage, setStoredHeroImage, fileToBase64 } from '../utils/imageUpload';
+import { getStoredHeroImage } from '../utils/imageUpload';
 import { Product } from '../types';
 
 interface HeroProps {
@@ -28,10 +19,7 @@ interface HeroProps {
 
 export const Hero: React.FC<HeroProps> = ({ customPhone, products = [] }) => {
   const [liveViewers, setLiveViewers] = useState(19);
-  const [customHeroImg, setCustomHeroImg] = useState<string | null>(() => getStoredHeroImage());
-  const [isUploading, setIsUploading] = useState(false);
-  const [isDragging, setIsDragging] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [customHeroImg] = useState<string | null>(() => getStoredHeroImage());
 
   // Fallback to first available product with image if no custom hero image
   const productWithImage = products.find((p) => p.images && p.images.length > 0);
@@ -49,57 +37,8 @@ export const Hero: React.FC<HeroProps> = ({ customPhone, products = [] }) => {
     return () => clearInterval(interval);
   }, []);
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    try {
-      setIsUploading(true);
-      const base64 = await fileToBase64(file, 1200, 1200, 0.88);
-      setCustomHeroImg(base64);
-      setStoredHeroImage(base64);
-    } catch (err) {
-      console.error('Failed to upload hero image:', err);
-    } finally {
-      setIsUploading(false);
-      if (fileInputRef.current) fileInputRef.current.value = '';
-    }
-  };
-
-  const handleDrop = async (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(false);
-    const file = e.dataTransfer.files?.[0];
-    if (!file || !file.type.startsWith('image/')) return;
-
-    try {
-      setIsUploading(true);
-      const base64 = await fileToBase64(file, 1200, 1200, 0.88);
-      setCustomHeroImg(base64);
-      setStoredHeroImage(base64);
-    } catch (err) {
-      console.error('Failed to drop hero image:', err);
-    } finally {
-      setIsUploading(false);
-    }
-  };
-
-  const handleRemoveHeroImage = () => {
-    setCustomHeroImg(null);
-    setStoredHeroImage(null);
-  };
-
   return (
     <section id="top" className="relative min-h-[75vh] lg:min-h-[82vh] bg-gradient-to-b from-[#F7F3EC] via-[#FAF8F5] to-[#F3EFEA] text-[#18261F] flex items-center pt-6 sm:pt-10 pb-12 sm:pb-16 overflow-hidden">
-      {/* Hidden file input */}
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept="image/*"
-        onChange={handleFileUpload}
-        className="hidden"
-      />
-
       {/* Background Soft Ambient Luxury Glow */}
       <div className="absolute top-1/4 left-1/4 -translate-x-1/2 -translate-y-1/2 w-[400px] sm:w-[500px] h-[400px] sm:h-[500px] bg-[#E8C5A8]/25 rounded-full blur-[140px] pointer-events-none"></div>
       <div className="absolute bottom-10 right-10 w-[350px] sm:w-[450px] h-[350px] sm:h-[450px] bg-[#C8DEC5]/25 rounded-full blur-[130px] pointer-events-none"></div>
@@ -200,23 +139,15 @@ export const Hero: React.FC<HeroProps> = ({ customPhone, products = [] }) => {
             </div>
           </div>
 
-          {/* Right Column: Hero Interactive Photo Stage & Custom Uploader */}
+          {/* Right Column: Hero Visual Presentation */}
           <div className="lg:col-span-5 relative mt-2 lg:mt-0">
             <div className="relative mx-auto max-w-md lg:max-w-none">
               {/* Outer decorative glow */}
               <div className="absolute -inset-2 rounded-3xl bg-gradient-to-tr from-[#E8C5A8]/40 via-white/50 to-[#C8DEC5]/40 blur-md pointer-events-none"></div>
 
-              {/* Image / Upload Stage Card */}
+              {/* Image Stage Card */}
               <div
-                onDragOver={(e) => {
-                  e.preventDefault();
-                  setIsDragging(true);
-                }}
-                onDragLeave={() => setIsDragging(false)}
-                onDrop={handleDrop}
-                className={`relative rounded-3xl overflow-hidden border border-[#E8E1D7] shadow-xl bg-white group min-h-[360px] sm:min-h-[480px] flex flex-col items-center justify-center transition-all ${
-                  isDragging ? 'bg-[#FAF0E6] border-2 border-dashed border-[#C85A17]' : ''
-                }`}
+                className="relative rounded-3xl overflow-hidden border border-[#E8E1D7] shadow-xl bg-white group min-h-[360px] sm:min-h-[480px] flex flex-col items-center justify-center"
               >
                 {activeDisplayImage ? (
                   <>
@@ -240,27 +171,6 @@ export const Hero: React.FC<HeroProps> = ({ customPhone, products = [] }) => {
                       <span>Haute Couture</span>
                     </div>
 
-                    {/* Floating Image Actions (Changer / Supprimer) */}
-                    <div className="absolute top-12 left-3 flex items-center gap-1.5 z-20">
-                      <button
-                        onClick={() => fileInputRef.current?.click()}
-                        className="px-2.5 py-1 rounded-full bg-black/75 hover:bg-black text-white text-[10px] font-bold backdrop-blur-md flex items-center gap-1 shadow-md transition-all cursor-pointer"
-                        title="Remplacer cette photo d'accueil"
-                      >
-                        <Camera className="w-3 h-3 text-[#F4A261]" />
-                        <span>Changer photo</span>
-                      </button>
-                      {customHeroImg && (
-                        <button
-                          onClick={handleRemoveHeroImage}
-                          className="p-1 rounded-full bg-red-600/80 hover:bg-red-600 text-white shadow-md transition-all cursor-pointer"
-                          title="Supprimer la photo personnalisée"
-                        >
-                          <Trash2 className="w-3 h-3" />
-                        </button>
-                      )}
-                    </div>
-
                     {/* Lookbook Callout */}
                     <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20">
                       <a
@@ -274,33 +184,26 @@ export const Hero: React.FC<HeroProps> = ({ customPhone, products = [] }) => {
                     </div>
                   </>
                 ) : (
-                  /* Clean interactive upload state when no image */
-                  <div
-                    onClick={() => fileInputRef.current?.click()}
-                    className="w-full h-full p-8 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-[#FAF0E6]/40 transition-colors"
-                  >
-                    <div className="w-20 h-20 rounded-3xl bg-[#FAF0E6] border border-[#E8D4C0] flex items-center justify-center text-[#C85A17] mb-4 shadow-sm group-hover:scale-105 transition-transform">
-                      {isUploading ? (
-                        <div className="w-8 h-8 border-3 border-[#C85A17] border-t-transparent rounded-full animate-spin" />
-                      ) : (
-                        <Camera className="w-10 h-10" />
-                      )}
+                  /* Elegant luxury editorial fallback card */
+                  <div className="w-full h-[360px] sm:h-[480px] p-8 flex flex-col items-center justify-center text-center bg-gradient-to-b from-[#FAF8F5] to-[#F3EFEA]">
+                    <div className="w-20 h-20 rounded-full bg-[#FAF0E6] border border-[#E8D4C0] flex items-center justify-center text-[#C85A17] mb-4 shadow-sm">
+                      <Sparkles className="w-10 h-10 text-[#C85A17]" />
                     </div>
 
-                    <h3 className="font-serif text-lg font-bold text-[#18261F] mb-1">
-                      Ajoutez votre photo d'en-tête
+                    <h3 className="font-serif text-2xl font-bold text-[#18261F] mb-2 tracking-tight">
+                      L'AURA Eyewear Abidjan
                     </h3>
-                    <p className="text-xs text-[#4A5850] max-w-xs mb-4">
-                      Glissez votre photo ici ou cliquez pour choisir une image de lunettes depuis votre appareil.
+                    <p className="text-xs text-[#4A5850] max-w-xs mb-5 leading-relaxed">
+                      Collection Haute Couture 2026. Montures d'exception et verres polarisés UV400.
                     </p>
 
-                    <button
-                      type="button"
-                      className="px-5 py-2.5 rounded-full bg-[#C85A17] hover:bg-[#A84A12] text-white text-xs font-bold shadow-md flex items-center gap-1.5 cursor-pointer"
+                    <a
+                      href="#collection"
+                      className="px-6 py-2.5 rounded-full bg-[#C85A17] hover:bg-[#A84A12] text-white text-xs font-bold shadow-md flex items-center gap-2"
                     >
-                      <Upload className="w-4 h-4" />
-                      <span>Importer une image</span>
-                    </button>
+                      <ShoppingBag className="w-4 h-4" />
+                      <span>Explorer le catalogue</span>
+                    </a>
                   </div>
                 )}
 
