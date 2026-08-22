@@ -299,7 +299,14 @@ export const AdminManagerModal: React.FC<AdminManagerModalProps> = ({
       setMediaLibrary(mergedLibrary);
       onUpdateProducts(updatedProducts);
 
-      showToast(`📸 ${newItems.length} photo(s) ajoutée(s) à votre médiathèque Admin !`);
+      // Instantly sync to server for phones and other devices
+      pushServerSyncData({
+        products: updatedProducts,
+        mediaLibrary: mergedLibrary,
+        heroImage: getStoredHeroImage(),
+      });
+
+      showToast(`📸 ${newItems.length} photo(s) ajoutée(s) et synchronisées sur tous les appareils !`);
     } catch (err) {
       console.error(err);
       showToast('❌ Erreur lors de l’importation.');
@@ -358,7 +365,13 @@ export const AdminManagerModal: React.FC<AdminManagerModalProps> = ({
       });
 
       onUpdateProducts(updated);
-      setMediaLibrary(getStoredMediaLibrary());
+      const updatedLib = getStoredMediaLibrary();
+      setMediaLibrary(updatedLib);
+      pushServerSyncData({
+        products: updated,
+        mediaLibrary: updatedLib,
+        heroImage: getStoredHeroImage(),
+      });
       showToast('📸 Photo enregistrée dans la médiathèque & attribuée au modèle !');
     } catch (err) {
       console.error(err);
@@ -400,6 +413,12 @@ export const AdminManagerModal: React.FC<AdminManagerModalProps> = ({
     setAssigningMedia(null);
     setPickingMediaForProduct(null);
 
+    pushServerSyncData({
+      products: updated,
+      mediaLibrary: updatedLibrary,
+      heroImage: getStoredHeroImage(),
+    });
+
     showToast(`✅ Photo attribuée au modèle "${targetProd.name}" !`);
   };
 
@@ -414,6 +433,11 @@ export const AdminManagerModal: React.FC<AdminManagerModalProps> = ({
     }));
     saveStoredMediaLibrary(updatedLibrary);
     setMediaLibrary(updatedLibrary);
+
+    pushServerSyncData({
+      heroImage: imageUrl,
+      mediaLibrary: updatedLibrary,
+    });
 
     showToast('🌟 Photo définie comme photo d’accueil principale (Hero) !');
   };
@@ -437,6 +461,12 @@ export const AdminManagerModal: React.FC<AdminManagerModalProps> = ({
         setStoredHeroImage(null);
         setHeroImagePreview(null);
       }
+
+      pushServerSyncData({
+        products: updatedProducts,
+        mediaLibrary: updatedLib,
+        heroImage: heroImagePreview === mediaUrl ? null : getStoredHeroImage(),
+      });
 
       showToast('🗑️ Photo supprimée de la médiathèque');
     }
