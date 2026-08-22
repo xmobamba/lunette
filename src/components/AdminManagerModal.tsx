@@ -125,6 +125,7 @@ export const AdminManagerModal: React.FC<AdminManagerModalProps> = ({
 
   // Photo Uploader States
   const [isUploadingPhotos, setIsUploadingPhotos] = useState(false);
+  const [isDraggingOver, setIsDraggingOver] = useState(false);
   const [heroImagePreview, setHeroImagePreview] = useState<string | null>(() => getStoredHeroImage());
   const photoInputRef = useRef<HTMLInputElement>(null);
   const singleProductPhotoInputRef = useRef<HTMLInputElement>(null);
@@ -142,20 +143,19 @@ export const AdminManagerModal: React.FC<AdminManagerModalProps> = ({
     setTimeout(() => setFeedbackMsg(null), 2800);
   };
 
-  // Handle Multi-file Upload in Media Library
-  const handleMultiFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files || files.length === 0) return;
+  const processFilesList = async (filesList: FileList | File[]) => {
+    if (!filesList || filesList.length === 0) return;
 
     try {
       setIsUploadingPhotos(true);
       const newItems: MediaImage[] = [];
       const updatedProducts = [...products];
-      let assignedCount = 0;
 
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i];
-        const base64 = await fileToBase64(file);
+      for (let i = 0; i < filesList.length; i++) {
+        const file = filesList[i];
+        if (!file.type.startsWith('image/')) continue;
+
+        const base64 = await fileToBase64(file, 900, 900, 0.82);
         
         // Check if there is a product without image to auto-assign
         let targetProduct: Product | undefined;
@@ -166,7 +166,6 @@ export const AdminManagerModal: React.FC<AdminManagerModalProps> = ({
               ...updatedProducts[pIdx],
               images: [base64],
             };
-            assignedCount++;
             break;
           }
         }
@@ -183,6 +182,11 @@ export const AdminManagerModal: React.FC<AdminManagerModalProps> = ({
         newItems.push(mediaItem);
       }
 
+      if (newItems.length === 0) {
+        showToast('⚠️ Aucun fichier image valide trouvé.');
+        return;
+      }
+
       // If no hero image is set, use the first uploaded photo as Hero
       if (!getStoredHeroImage() && newItems.length > 0) {
         newItems[0].isHero = true;
@@ -195,13 +199,33 @@ export const AdminManagerModal: React.FC<AdminManagerModalProps> = ({
       setMediaLibrary(mergedLibrary);
       onUpdateProducts(updatedProducts);
 
-      showToast(`📸 ${files.length} photo(s) ajoutée(s) à votre médiathèque Admin !`);
+      showToast(`📸 ${newItems.length} photo(s) ajoutée(s) à votre médiathèque Admin !`);
     } catch (err) {
       console.error(err);
       showToast('❌ Erreur lors de l’importation.');
     } finally {
       setIsUploadingPhotos(false);
+      setIsDraggingOver(false);
       if (photoInputRef.current) photoInputRef.current.value = '';
+    }
+  };
+
+  // Handle Multi-file Upload in Media Library
+  const handleMultiFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    e.stopPropagation();
+    const files = e.target.files;
+    if (files && files.length > 0) {
+      await processFilesList(files);
+    }
+  };
+
+  const handleDropFiles = async (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDraggingOver(false);
+    const files = e.dataTransfer.files;
+    if (files && files.length > 0) {
+      await processFilesList(files);
     }
   };
 
@@ -430,32 +454,23 @@ export const AdminManagerModal: React.FC<AdminManagerModalProps> = ({
     <div
       id="admin-manager-backdrop"
       className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-6 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200"
-      onClick={onClose}
+      onClick={(e) => {
+        if (e.target === e.currentTarget) {
+          onClose();
+        }
+      }}
     >
-      {/* Hidden file inputs */}
-      <input
-        ref={photoInputRef}
-        type="file"
-        accept="image/*"
-        multiple
-        onChange={handleMultiFileUpload}
-        className="hidden"
-      />
-      <input
-        ref={singleProductPhotoInputRef}
-        type="file"
-        accept="image/*"
-        onChange={handleSingleProductUpload}
-        className="hidden"
-      />
-
       {/* Fullscreen Zoom Modal */}
       {previewZoomImage && (
         <div
           className="fixed inset-0 z-60 bg-black/90 backdrop-blur-md flex items-center justify-center p-4"
-          onClick={() => setPreviewZoomImage(null)}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setPreviewZoomImage(null);
+            }
+          }}
         >
-          <div className="relative max-w-3xl max-h-[90vh] flex flex-col items-center">
+          <div className="relative max-w-3xl max-h-[90vh] flex flex-col items-center" onClick={(e) => e.stopPropagation()}>
             <img
               src={previewZoomImage}
               alt="Aperçu Grand Format"
@@ -475,7 +490,11 @@ export const AdminManagerModal: React.FC<AdminManagerModalProps> = ({
       {pickingMediaForProduct && (
         <div
           className="fixed inset-0 z-60 bg-black/80 backdrop-blur-md flex items-center justify-center p-4"
-          onClick={() => setPickingMediaForProduct(null)}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setPickingMediaForProduct(null);
+            }
+          }}
         >
           <div
             className="bg-white rounded-3xl p-6 max-w-2xl w-full max-h-[85vh] flex flex-col border border-[#E8E1D7] shadow-2xl"
@@ -524,7 +543,8 @@ export const AdminManagerModal: React.FC<AdminManagerModalProps> = ({
 
             <div className="pt-3 border-t border-[#EAE4DB] flex justify-between items-center">
               <button
-                onClick={() => {
+                onClick={(e) => {
+                  e.stopPropagation();
                   targetProductForSingleUpload.current = pickingMediaForProduct.id;
                   singleProductPhotoInputRef.current?.click();
                   setPickingMediaForProduct(null);
@@ -551,6 +571,24 @@ export const AdminManagerModal: React.FC<AdminManagerModalProps> = ({
         className="bg-white rounded-3xl border border-[#E8E1D7] shadow-2xl w-full max-w-5xl max-h-[92vh] flex flex-col overflow-hidden relative animate-in zoom-in-95 duration-200 text-[#18261F]"
         onClick={(e) => e.stopPropagation()}
       >
+        {/* Hidden file inputs placed safely inside the card with stopPropagation */}
+        <input
+          ref={photoInputRef}
+          type="file"
+          accept="image/*"
+          multiple
+          onClick={(e) => e.stopPropagation()}
+          onChange={handleMultiFileUpload}
+          className="hidden"
+        />
+        <input
+          ref={singleProductPhotoInputRef}
+          type="file"
+          accept="image/*"
+          onClick={(e) => e.stopPropagation()}
+          onChange={handleSingleProductUpload}
+          className="hidden"
+        />
         {/* Modal Header */}
         <div className="p-4 sm:p-5 border-b border-[#EAE4DB] flex items-center justify-between bg-[#FAF8F5]">
           <div className="flex items-center gap-3">
@@ -662,27 +700,45 @@ export const AdminManagerModal: React.FC<AdminManagerModalProps> = ({
               
               {/* Top Drag & Drop Batch Upload Zone */}
               <div
-                onClick={() => photoInputRef.current?.click()}
-                className="border-2 border-dashed border-[#C85A17] hover:border-[#A84A12] bg-[#FAF0E6]/50 hover:bg-[#FAF0E6] p-6 sm:p-8 rounded-3xl text-center cursor-pointer transition-all flex flex-col items-center justify-center group shadow-xs"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  photoInputRef.current?.click();
+                }}
+                onDragOver={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setIsDraggingOver(true);
+                }}
+                onDragLeave={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setIsDraggingOver(false);
+                }}
+                onDrop={handleDropFiles}
+                className={`border-2 border-dashed rounded-3xl p-6 sm:p-8 text-center cursor-pointer transition-all flex flex-col items-center justify-center group shadow-xs ${
+                  isDraggingOver
+                    ? 'border-[#1E6B48] bg-[#E8F1EC] scale-[1.01]'
+                    : 'border-[#C85A17] hover:border-[#A84A12] bg-[#FAF0E6]/60 hover:bg-[#FAF0E6]'
+                }`}
               >
                 <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-white border border-[#E8D4C0] flex items-center justify-center text-[#C85A17] mb-3 group-hover:scale-110 transition-transform shadow-2xs">
                   {isUploadingPhotos ? (
                     <div className="w-8 h-8 border-3 border-[#C85A17] border-t-transparent rounded-full animate-spin" />
                   ) : (
-                    <Upload className="w-7 h-7 sm:w-8 sm:h-8" />
+                    <Upload className={`w-7 h-7 sm:w-8 sm:h-8 ${isDraggingOver ? 'text-[#1E6B48]' : 'text-[#C85A17]'}`} />
                   )}
                 </div>
 
                 <h3 className="font-serif text-base sm:text-lg font-bold text-[#18261F] mb-1">
-                  Glissez ou sélectionnez vos photos de lunettes ici
+                  {isDraggingOver ? 'Relâchez vos photos ici !' : 'Glissez ou sélectionnez vos photos de lunettes ici'}
                 </h3>
                 <p className="text-xs text-[#4A5850] max-w-md mb-4 font-normal">
                   Ajoutez plusieurs photos d'un coup. Elles seront enregistrées dans cette médiathèque et attribuées à vos modèles de lunettes.
                 </p>
 
-                <div className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#C85A17] text-white font-bold text-xs shadow-md">
+                <div className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#C85A17] hover:bg-[#A84A12] text-white font-bold text-xs shadow-md transition-transform active:scale-95">
                   <Camera className="w-4 h-4" />
-                  <span>Importer des photos dans la Médiathèque</span>
+                  <span>{isUploadingPhotos ? 'Importation en cours...' : 'Importer des photos dans la Médiathèque'}</span>
                 </div>
               </div>
 
