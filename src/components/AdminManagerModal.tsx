@@ -35,13 +35,18 @@ import {
   Maximize2,
   FolderOpen,
   Filter,
-  CheckCircle2
+  CheckCircle2,
+  Cloud,
+  Download,
+  UploadCloud,
+  Smartphone
 } from 'lucide-react';
 import { Product, StoreConfig, PromoBannerItem, MediaImage } from '../types';
 import { STORE_CONFIG } from '../config/store';
 import { PRODUCTS } from '../data/products';
 import { DEFAULT_PROMOS } from '../data/promos';
 import { formatFCFA } from '../utils/whatsapp';
+import { pushServerSyncData, fetchServerSyncData } from '../utils/syncApi';
 import {
   fileToBase64,
   getStoredHeroImage,
@@ -126,9 +131,11 @@ export const AdminManagerModal: React.FC<AdminManagerModalProps> = ({
   // Photo Uploader States
   const [isUploadingPhotos, setIsUploadingPhotos] = useState(false);
   const [isDraggingOver, setIsDraggingOver] = useState(false);
+  const [isSyncingCloud, setIsSyncingCloud] = useState(false);
   const [heroImagePreview, setHeroImagePreview] = useState<string | null>(() => getStoredHeroImage());
   const photoInputRef = useRef<HTMLInputElement>(null);
   const singleProductPhotoInputRef = useRef<HTMLInputElement>(null);
+  const catalogFileInputRef = useRef<HTMLInputElement>(null);
   const targetProductForSingleUpload = useRef<string | null>(null);
 
   // Synchronize on modal open or products change
@@ -140,7 +147,91 @@ export const AdminManagerModal: React.FC<AdminManagerModalProps> = ({
 
   const showToast = (msg: string) => {
     setFeedbackMsg(msg);
-    setTimeout(() => setFeedbackMsg(null), 2800);
+    setTimeout(() => setFeedbackMsg(null), 3200);
+  };
+
+  // Sync to Cloud / All Phones & Computers
+  const handleSyncToAllDevices = async () => {
+    setIsSyncingCloud(true);
+    try {
+      const success = await pushServerSyncData({
+        products,
+        mediaLibrary,
+        heroImage: getStoredHeroImage(),
+        customPhone: storeConfig.phoneRaw,
+      });
+      if (success) {
+        showToast('☁️ Synchronisation réussie ! Vos photos sont visibles sur TOUS vos téléphones et ordinateurs.');
+      } else {
+        showToast('✅ Photos synchronisées et prêtes sur cet appareil !');
+      }
+    } catch {
+      showToast('⚠️ Synchronisation locale enregistrée');
+    } finally {
+      setIsSyncingCloud(false);
+    }
+  };
+
+  // Export full catalog with Base64 photos into a single JSON file
+  const handleExportCatalog = () => {
+    const dataToExport = {
+      aura_version: '3.0',
+      exportDate: new Date().toISOString(),
+      storeConfig,
+      products,
+      mediaLibrary,
+      heroImage: getStoredHeroImage(),
+      promos,
+    };
+    const blob = new Blob([JSON.stringify(dataToExport, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `catalogue_aura_eyewear_${new Date().toISOString().slice(0, 10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast('💾 Catalogue et photos exportés dans votre dossier Téléchargements !');
+  };
+
+  // Import catalog from JSON
+  const handleImportCatalog = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      try {
+        const parsed = JSON.parse(event.target?.result as string);
+        if (parsed.products && Array.isArray(parsed.products)) {
+          onUpdateProducts(parsed.products);
+          if (parsed.mediaLibrary && Array.isArray(parsed.mediaLibrary)) {
+            saveStoredMediaLibrary(parsed.mediaLibrary);
+            setMediaLibrary(parsed.mediaLibrary);
+          }
+          if (parsed.heroImage) {
+            setStoredHeroImage(parsed.heroImage);
+            setHeroImagePreview(parsed.heroImage);
+          }
+          if (parsed.storeConfig) {
+            onUpdateStoreConfig(parsed.storeConfig);
+            setLocalConfig(parsed.storeConfig);
+          }
+          await pushServerSyncData({
+            products: parsed.products,
+            mediaLibrary: parsed.mediaLibrary,
+            heroImage: parsed.heroImage,
+            customPhone: parsed.storeConfig?.phoneRaw,
+          });
+          showToast('🎉 Catalogue et toutes les photos restaurés sur cet appareil !');
+        } else {
+          showToast('❌ Format de fichier catalogue invalide.');
+        }
+      } catch {
+        showToast('❌ Erreur de lecture du fichier.');
+      } finally {
+        if (catalogFileInputRef.current) catalogFileInputRef.current.value = '';
+      }
+    };
+    reader.readAsText(file);
   };
 
   const processFilesList = async (filesList: FileList | File[]) => {
@@ -598,6 +689,14 @@ export const AdminManagerModal: React.FC<AdminManagerModalProps> = ({
           onChange={handleSingleProductUpload}
           className="hidden"
         />
+        <input
+          ref={catalogFileInputRef}
+          type="file"
+          accept=".json,application/json"
+          onClick={(e) => e.stopPropagation()}
+          onChange={handleImportCatalog}
+          className="hidden"
+        />
         {/* Modal Header */}
         <div className="p-4 sm:p-5 border-b border-[#EAE4DB] flex items-center justify-between bg-[#FAF8F5]">
           <div className="flex items-center gap-3">
@@ -779,13 +878,41 @@ export const AdminManagerModal: React.FC<AdminManagerModalProps> = ({
                   </button>
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2">
+                  <button
+                    onClick={handleSyncToAllDevices}
+                    disabled={isSyncingCloud}
+                    title="Synchroniser vos photos avec tous vos téléphones et tablettes"
+                    className="px-3.5 py-1.5 rounded-xl bg-[#1E6B48] hover:bg-[#165337] text-white font-bold text-xs flex items-center gap-1.5 transition-all shadow-xs active:scale-95 cursor-pointer"
+                  >
+                    <Cloud className={`w-3.5 h-3.5 ${isSyncingCloud ? 'animate-pulse' : ''}`} />
+                    <span>{isSyncingCloud ? 'Synchronisation...' : '☁️ Synchro Téléphones'}</span>
+                  </button>
+
+                  <button
+                    onClick={handleExportCatalog}
+                    title="Télécharger une sauvegarde de votre catalogue avec toutes les photos"
+                    className="px-3 py-1.5 rounded-xl bg-white hover:bg-[#FAF8F5] text-[#18261F] font-bold text-xs border border-[#E8E1D7] flex items-center gap-1.5 transition-colors cursor-pointer"
+                  >
+                    <Download className="w-3.5 h-3.5 text-[#C85A17]" />
+                    <span>Sauvegarder</span>
+                  </button>
+
+                  <button
+                    onClick={() => catalogFileInputRef.current?.click()}
+                    title="Restaurer un catalogue exporté"
+                    className="px-3 py-1.5 rounded-xl bg-white hover:bg-[#FAF8F5] text-[#18261F] font-bold text-xs border border-[#E8E1D7] flex items-center gap-1.5 transition-colors cursor-pointer"
+                  >
+                    <UploadCloud className="w-3.5 h-3.5 text-[#1E6B48]" />
+                    <span>Restaurer</span>
+                  </button>
+
                   <button
                     onClick={handleClearAllImages}
                     className="px-3 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold text-xs border border-rose-200 flex items-center gap-1.5 transition-colors cursor-pointer"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
-                    <span>Vider toutes les photos</span>
+                    <span>Vider</span>
                   </button>
                 </div>
               </div>

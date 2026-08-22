@@ -19,14 +19,29 @@ import { ProductModal } from './components/ProductModal';
 import { AdminManagerModal } from './components/AdminManagerModal';
 import { SocialStories } from './components/SocialStories';
 import { MobileSocialNav } from './components/MobileSocialNav';
-import { addPhotoToMediaLibrary, syncAllPhotosToMediaLibrary } from './utils/imageUpload';
+import { addPhotoToMediaLibrary, syncAllPhotosToMediaLibrary, saveStoredMediaLibrary, setStoredHeroImage } from './utils/imageUpload';
+import { fetchServerSyncData, pushServerSyncData } from './utils/syncApi';
 
 export default function App() {
   // 1. Dynamic Products State with localStorage persistence (v3 catalog - user custom images)
   const [products, setProducts] = useState<Product[]>(() => {
     try {
       const saved = localStorage.getItem('aura_products_v3');
-      if (saved) return JSON.parse(saved);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        // If parsed is non-empty array with images, use it, otherwise merge with curated PRODUCTS
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed.map((p) => {
+            if (!p.images || p.images.length === 0) {
+              const defaultMatch = PRODUCTS.find((dp) => dp.id === p.id);
+              if (defaultMatch && defaultMatch.images && defaultMatch.images.length > 0) {
+                return { ...p, images: defaultMatch.images };
+              }
+            }
+            return p;
+          });
+        }
+      }
       return PRODUCTS;
     } catch {
       return PRODUCTS;
@@ -58,6 +73,37 @@ export default function App() {
   // 4. Selection and Favorites
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isAdminOpen, setIsAdminOpen] = useState(false);
+
+  // Multi-Device Cloud Sync on Mount
+  useEffect(() => {
+    async function loadCloudSync() {
+      try {
+        const cloudData = await fetchServerSyncData();
+        if (cloudData) {
+          if (cloudData.products && Array.isArray(cloudData.products) && cloudData.products.length > 0) {
+            setProducts(cloudData.products);
+            localStorage.setItem('aura_products_v3', JSON.stringify(cloudData.products));
+          }
+          if (cloudData.mediaLibrary && Array.isArray(cloudData.mediaLibrary)) {
+            saveStoredMediaLibrary(cloudData.mediaLibrary);
+          }
+          if (cloudData.heroImage) {
+            setStoredHeroImage(cloudData.heroImage);
+          }
+          if (cloudData.customPhone) {
+            setStoreConfig((prev) => ({
+              ...prev,
+              phoneRaw: cloudData.customPhone || prev.phoneRaw,
+              phoneDisplay: `+225 ${cloudData.customPhone || prev.phoneRaw}`,
+            }));
+          }
+        }
+      } catch (err) {
+        console.debug('Cloud sync check:', err);
+      }
+    }
+    loadCloudSync();
+  }, []);
 
   // Check URL on load or keyboard shortcut to open Admin Panel (e.g. #admin or Ctrl+Shift+A)
   useEffect(() => {
@@ -127,6 +173,8 @@ export default function App() {
     } catch (err) {
       console.error(err);
     }
+    // Asynchronously push to server for multi-device sync
+    pushServerSyncData({ products: newProducts });
   };
 
   // Single Product Image Update
@@ -155,6 +203,7 @@ export default function App() {
     } catch (err) {
       console.error(err);
     }
+    pushServerSyncData({ customPhone: newConfig.phoneRaw });
   };
 
   // Synchronize promotional banners updates
