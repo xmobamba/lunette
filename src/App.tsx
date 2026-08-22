@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { PRODUCTS } from './data/products';
 import { STORE_CONFIG } from './config/store';
 import { DEFAULT_PROMOS } from './data/promos';
@@ -19,7 +19,14 @@ import { ProductModal } from './components/ProductModal';
 import { AdminManagerModal } from './components/AdminManagerModal';
 import { SocialStories } from './components/SocialStories';
 import { MobileSocialNav } from './components/MobileSocialNav';
-import { addPhotoToMediaLibrary, syncAllPhotosToMediaLibrary, saveStoredMediaLibrary, setStoredHeroImage } from './utils/imageUpload';
+import { 
+  addPhotoToMediaLibrary, 
+  syncAllPhotosToMediaLibrary, 
+  saveStoredMediaLibrary, 
+  getStoredMediaLibrary,
+  getStoredHeroImage,
+  setStoredHeroImage 
+} from './utils/imageUpload';
 import { fetchServerSyncData, pushServerSyncData } from './utils/syncApi';
 
 export default function App() {
@@ -71,50 +78,104 @@ export default function App() {
     }
   });
 
-  // 4. Selection and Favorites
+  // 4. Hero Image State
+  const [heroImage, setHeroImage] = useState<string | null>(() => getStoredHeroImage());
+
+  // 5. Selection and Favorites
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isAdminOpen, setIsAdminOpen] = useState(false);
+  const lastSyncTimestampRef = useRef<number>(0);
 
-  // Multi-Device Cloud Sync on Mount
-  useEffect(() => {
-    async function loadCloudSync() {
-      try {
-        const cloudData = await fetchServerSyncData();
-        if (cloudData) {
-          if (cloudData.products && Array.isArray(cloudData.products) && cloudData.products.length > 0) {
-            const sanitized = cloudData.products.map((p) => {
-              const hasUnsplash = p.images?.some((img: string) => typeof img === 'string' && img.includes('images.unsplash.com'));
-              if (!p.images || p.images.length === 0 || hasUnsplash) {
-                const defaultMatch = PRODUCTS.find((dp) => dp.id === p.id);
-                if (defaultMatch && defaultMatch.images && defaultMatch.images.length > 0) {
-                  return { ...p, images: defaultMatch.images };
-                }
-              }
-              return p;
-            });
-            setProducts(sanitized);
-            localStorage.setItem('aura_products_v4', JSON.stringify(sanitized));
+  // Core synchronization method across all connected devices
+  const performServerSync = useCallback(async (pushIfEmpty = false) => {
+    try {
+      const cloudData = await fetchServerSyncData();
+      if (cloudData && cloudData.products && Array.isArray(cloudData.products) && cloudData.products.length > 0) {
+        // If server has newer data, apply it
+        if (cloudData.lastUpdated && cloudData.lastUpdated <= lastSyncTimestampRef.current) {
+          return;
+        }
+        lastSyncTimestampRef.current = cloudData.lastUpdated || Date.now();
+
+        const sanitized = cloudData.products.map((p) => {
+          const hasUnsplash = p.images?.some((img: string) => typeof img === 'string' && img.includes('images.unsplash.com'));
+          if (!p.images || p.images.length === 0 || hasUnsplash) {
+            const defaultMatch = PRODUCTS.find((dp) => dp.id === p.id);
+            if (defaultMatch && defaultMatch.images && defaultMatch.images.length > 0) {
+              return { ...p, images: defaultMatch.images };
+            }
           }
-          if (cloudData.mediaLibrary && Array.isArray(cloudData.mediaLibrary)) {
-            saveStoredMediaLibrary(cloudData.mediaLibrary);
-          }
-          if (cloudData.heroImage) {
-            setStoredHeroImage(cloudData.heroImage);
-          }
-          if (cloudData.customPhone) {
-            setStoreConfig((prev) => ({
+          return p;
+        });
+
+        setProducts(sanitized);
+        try {
+          localStorage.setItem('aura_products_v4', JSON.stringify(sanitized));
+        } catch {}
+
+        if (cloudData.mediaLibrary && Array.isArray(cloudData.mediaLibrary)) {
+          saveStoredMediaLibrary(cloudData.mediaLibrary);
+        }
+        if (cloudData.heroImage !== undefined) {
+          setStoredHeroImage(cloudData.heroImage);
+          setHeroImage(cloudData.heroImage);
+        }
+        if (cloudData.customPhone) {
+          setStoreConfig((prev) => {
+            const updated = {
               ...prev,
               phoneRaw: cloudData.customPhone || prev.phoneRaw,
               phoneDisplay: `+225 ${cloudData.customPhone || prev.phoneRaw}`,
-            }));
-          }
+            };
+            try {
+              localStorage.setItem('aura_store_config_v2', JSON.stringify(updated));
+              localStorage.setItem('aura_custom_phone', updated.phoneRaw);
+            } catch {}
+            return updated;
+          });
         }
-      } catch (err) {
-        console.debug('Cloud sync check:', err);
+      } else if (pushIfEmpty) {
+        // Server store is empty, push our current rich catalog so all devices can sync
+        const currentHero = getStoredHeroImage();
+        const currentLib = getStoredMediaLibrary();
+        await pushServerSyncData({
+          products,
+          mediaLibrary: currentLib,
+          heroImage: currentHero,
+          customPhone: storeConfig.phoneRaw,
+        });
+        lastSyncTimestampRef.current = Date.now();
       }
+    } catch (err) {
+      console.debug('Cloud sync error:', err);
     }
-    loadCloudSync();
-  }, []);
+  }, [products, storeConfig.phoneRaw]);
+
+  // Real-Time Background Sync & Device Handshake
+  useEffect(() => {
+    // Initial sync on mount
+    performServerSync(true);
+
+    // Continuous polling every 4 seconds to catch edits from other tabs/devices
+    const syncInterval = setInterval(() => {
+      performServerSync(false);
+    }, 4000);
+
+    // Instant sync when switching back to this app (e.g. mobile tab wake-up)
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible') {
+        performServerSync(false);
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibility);
+    window.addEventListener('focus', handleVisibility);
+
+    return () => {
+      clearInterval(syncInterval);
+      document.removeEventListener('visibilitychange', handleVisibility);
+      window.removeEventListener('focus', handleVisibility);
+    };
+  }, [performServerSync]);
 
   // Check URL on load or keyboard shortcut to open Admin Panel (e.g. #admin or Ctrl+Shift+A)
   useEffect(() => {
@@ -184,8 +245,14 @@ export default function App() {
     } catch (err) {
       console.error(err);
     }
+    lastSyncTimestampRef.current = Date.now();
     // Asynchronously push to server for multi-device sync
-    pushServerSyncData({ products: newProducts });
+    pushServerSyncData({ 
+      products: newProducts,
+      mediaLibrary: getStoredMediaLibrary(),
+      heroImage: getStoredHeroImage(),
+      customPhone: storeConfig.phoneRaw,
+    });
   };
 
   // Single Product Image Update
@@ -214,7 +281,13 @@ export default function App() {
     } catch (err) {
       console.error(err);
     }
-    pushServerSyncData({ customPhone: newConfig.phoneRaw });
+    lastSyncTimestampRef.current = Date.now();
+    pushServerSyncData({ 
+      customPhone: newConfig.phoneRaw,
+      products,
+      mediaLibrary: getStoredMediaLibrary(),
+      heroImage: getStoredHeroImage(),
+    });
   };
 
   // Synchronize promotional banners updates
@@ -248,7 +321,11 @@ export default function App() {
         />
 
         {/* 2. Hero Section with Custom Upload */}
-        <Hero customPhone={storeConfig.phoneRaw} />
+        <Hero 
+          customPhone={storeConfig.phoneRaw} 
+          products={products}
+          heroImage={heroImage}
+        />
 
         {/* 3. Instagram & TikTok Interactive Stories Reel */}
         <SocialStories

@@ -15,15 +15,15 @@ import { Product } from '../types';
 interface HeroProps {
   customPhone?: string;
   products?: Product[];
+  heroImage?: string | null;
 }
 
-export const Hero: React.FC<HeroProps> = ({ customPhone, products = [] }) => {
+export const Hero: React.FC<HeroProps> = ({ customPhone, products = [], heroImage }) => {
   const [liveViewers, setLiveViewers] = useState(19);
-  const [customHeroImg] = useState<string | null>(() => getStoredHeroImage());
 
   // Fallback to first available product with image if no custom hero image
   const productWithImage = products.find((p) => p.images && p.images.length > 0);
-  const activeDisplayImage = customHeroImg || (productWithImage ? productWithImage.images[0] : null);
+  const activeDisplayImage = heroImage || (productWithImage ? productWithImage.images[0] : null);
 
   // Subtle live viewer simulation for social buzz
   useEffect(() => {
