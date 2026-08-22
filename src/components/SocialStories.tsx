@@ -6,27 +6,15 @@ import {
   MessageCircle, 
   Sparkles, 
   Heart, 
-  Volume2, 
-  VolumeX, 
   ShieldCheck, 
   Flame, 
   ShoppingBag, 
-  Share2
+  Share2,
+  Camera,
+  Plus
 } from 'lucide-react';
-import { buildDirectMessageWhatsAppUrl } from '../utils/whatsapp';
-
-import imgChanelShield from '../assets/images/chanel_shield_black_1787218034317.jpg';
-import imgBvlgariAviator from '../assets/images/bvlgari_aviator_burgundy_1787242471047.jpg';
-import imgMiuMiuOval from '../assets/images/miumiu_oval_black_1787218119854.jpg';
-import imgCelineHavana from '../assets/images/celine_triomphe_havana_1787218062413.jpg';
-import imgBvlgariRimless from '../assets/images/bvlgari_rimless_black_1787218174732.jpg';
-import imgCelineBlack from '../assets/images/celine_triomphe_black_1787218159931.jpg';
-import imgLvPilot from '../assets/images/lv_pilot_cream_1787218102121.jpg';
-import imgBvlgariAmber from '../assets/images/bvlgari_serpenti_amber_1787218074048.jpg';
-import imgCartierOval from '../assets/images/cartier_cdecor_oval_1787218049335.jpg';
-import imgDiorEmerald from '../assets/images/dior_cd_emerald_1787218090618.jpg';
-import imgCelineOvalTortoise from '../assets/images/celine_oval_tortoise_1787242486013.jpg';
-import imgFredGold from '../assets/images/fred_cable_gold_1787218135047.jpg';
+import { buildDirectMessageWhatsAppUrl, buildProductWhatsAppUrl } from '../utils/whatsapp';
+import { Product } from '../types';
 
 export interface Story {
   id: string;
@@ -45,162 +33,47 @@ export interface Story {
   }[];
 }
 
-const STORIES_DATA: Story[] = [
-  {
-    id: 'story-chanel',
-    title: 'Chanel Masque',
-    tag: 'BESTSELLER',
-    coverImage: imgChanelShield,
-    slides: [
-      {
-        id: 'chanel-1',
-        image: imgChanelShield,
-        headline: 'Chanel Masque Shield CC',
-        caption: 'La pièce maîtresse de la saison. Monoverre noir enveloppant orné du double C doré signature et son étui matelassé.',
-        location: 'Cocody Ambassades, Abidjan',
-        productName: 'Chanel Shield CC',
-        productPrice: '35 000 FCFA',
-        whatsappMsg: 'Bonjour L’AURA EYEWEAR, j’ai vu la story Chanel Shield CC (35 000 FCFA) et je souhaite commander !',
-      },
-    ],
-  },
-  {
-    id: 'story-bvlgari',
-    title: 'Bvlgari Joaillerie',
-    tag: 'NOUVEAU',
-    coverImage: imgBvlgariAviator,
-    slides: [
-      {
-        id: 'bvlgari-1',
-        image: imgBvlgariAviator,
-        headline: 'Bvlgari Aviateur Bordeaux & Or',
-        caption: 'Double pont en or, verres dégradés bordeaux et motif joaillier Serpenti gravé sur les branches.',
-        location: 'Sofitel Ivoire, Abidjan',
-        productName: 'Bvlgari Aviateur',
-        productPrice: '35 000 FCFA',
-        whatsappMsg: 'Bonjour L’AURA EYEWEAR, je souhaite commander la paire Bvlgari Aviateur Bordeaux vue dans votre story.',
-      },
-      {
-        id: 'bvlgari-2',
-        image: imgBvlgariAmber,
-        headline: 'Bvlgari Serpenti Dégradé Ambre',
-        caption: 'Verres festonnés biseautés et détails Serpenti émaillés aux charnières.',
-        location: 'Assinie Beach Club',
-        productName: 'Bvlgari Serpenti Ambre',
-        productPrice: '35 000 FCFA',
-        whatsappMsg: 'Bonjour L’AURA EYEWEAR, je souhaite commander la Bvlgari Serpenti Ambrée.',
-      },
-    ],
-  },
-  {
-    id: 'story-miumiu',
-    title: 'Miu Miu Ovale',
-    tag: 'VIRAL',
-    coverImage: imgMiuMiuOval,
-    slides: [
-      {
-        id: 'miumiu-1',
-        image: imgMiuMiuOval,
-        headline: 'Miu Miu Ovale Couture Noire',
-        caption: 'Le phénomène mode ultra viral sur TikTok et Instagram. Livrée avec sa pochette signature rose poudré.',
-        location: 'Marcory Zone 4, Abidjan',
-        productName: 'Miu Miu Ovale',
-        productPrice: '35 000 FCFA',
-        whatsappMsg: 'Bonjour L’AURA EYEWEAR, je veux commander le modèle viral Miu Miu Ovale Noir (35 000 FCFA).',
-      },
-    ],
-  },
-  {
-    id: 'story-celine',
-    title: 'Céline Triomphe',
-    tag: 'PARIS',
-    coverImage: imgCelineHavana,
-    slides: [
-      {
-        id: 'celine-1',
-        image: imgCelineHavana,
-        headline: 'Céline Triomphe Carrée Écaille',
-        caption: 'La signature parisienne par excellence. Finition écaille noble et grand blason Triomphe doré.',
-        location: 'Deux Plateaux Vallon, Abidjan',
-        productName: 'Céline Triomphe Écaille',
-        productPrice: '35 000 FCFA',
-        whatsappMsg: 'Bonjour L’AURA EYEWEAR, je souhaite commander la Céline Triomphe Carrée Écaille.',
-      },
-      {
-        id: 'celine-2',
-        image: imgCelineOvalTortoise,
-        headline: 'Céline Triomphe Ovale Vintage',
-        caption: 'Format galbé rétro chic avec écusson doré embossé sur branches larges.',
-        location: 'Plateau Prestige, Abidjan',
-        productName: 'Céline Ovale Vintage',
-        productPrice: '35 000 FCFA',
-        whatsappMsg: 'Bonjour, je souhaite commander la Céline Ovale Vintage à 35 000 FCFA.',
-      },
-    ],
-  },
-  {
-    id: 'story-cartier',
-    title: 'Cartier C-Décor',
-    tag: 'PRESTIGE',
-    coverImage: imgCartierOval,
-    slides: [
-      {
-        id: 'cartier-1',
-        image: imgCartierOval,
-        headline: 'Cartier C Décor Ovale Sans Monture',
-        caption: 'La quintessence de l’élégance intemporelle. Verres biseautés et charnières C emblématiques dorées.',
-        location: 'Cocody Riviera Golf, Abidjan',
-        productName: 'Cartier C Décor Prestige',
-        productPrice: '35 000 FCFA',
-        whatsappMsg: 'Bonjour L’AURA EYEWEAR, je souhaite commander la Cartier C Décor Ovale (35 000 FCFA).',
-      },
-    ],
-  },
-  {
-    id: 'story-fred-dior',
-    title: 'Fred & Dior CD',
-    tag: 'ÉDITION OR',
-    coverImage: imgFredGold,
-    slides: [
-      {
-        id: 'fred-1',
-        image: imgFredGold,
-        headline: 'Fred Force 10 Câble Or Ciselé',
-        caption: 'Branches torsadées en câble d’or marin et verres biseautés cristal haute résistance.',
-        location: 'Abidjan Yacht Club',
-        productName: 'Fred Force 10 Câble Or',
-        productPrice: '35 000 FCFA',
-        whatsappMsg: 'Bonjour, je souhaite commander la Fred Force 10 Câble Or (35 000 FCFA).',
-      },
-      {
-        id: 'dior-1',
-        image: imgDiorEmerald,
-        headline: 'Dior CD Aviateur Émeraude',
-        caption: 'Verres vert émeraude pastel haute clarté et branches articulées en maillons de chaîne dorée CD.',
-        location: 'Abidjan Mall, Riviera',
-        productName: 'Dior CD Émeraude',
-        productPrice: '35 000 FCFA',
-        whatsappMsg: 'Bonjour, je souhaite commander la Dior CD Aviateur Émeraude.',
-      },
-    ],
-  },
-];
-
 interface SocialStoriesProps {
   customPhone?: string;
+  products?: Product[];
+  onOpenAdmin?: () => void;
 }
 
-export const SocialStories: React.FC<SocialStoriesProps> = ({ customPhone }) => {
+export const SocialStories: React.FC<SocialStoriesProps> = ({
+  customPhone,
+  products = [],
+  onOpenAdmin,
+}) => {
   const [activeStoryIndex, setActiveStoryIndex] = useState<number | null>(null);
   const [activeSlideIndex, setActiveSlideIndex] = useState<number>(0);
   const [progress, setProgress] = useState<number>(0);
   const [isPaused, setIsPaused] = useState<boolean>(false);
   const [likedStories, setLikedStories] = useState<Record<string, boolean>>({});
 
-  const currentStory = activeStoryIndex !== null ? STORIES_DATA[activeStoryIndex] : null;
+  // Generate stories dynamically from products that have uploaded images
+  const productsWithImages = products.filter((p) => p.images && p.images.length > 0);
+
+  const storiesData: Story[] = productsWithImages.map((prod, idx) => ({
+    id: `story-${prod.id}`,
+    title: prod.name,
+    tag: prod.badge || (idx === 0 ? 'BESTSELLER' : 'TENDANCE'),
+    coverImage: prod.images[0],
+    slides: prod.images.map((img, sIdx) => ({
+      id: `${prod.id}-slide-${sIdx}`,
+      image: img,
+      headline: prod.name,
+      caption: `${prod.subtitle || prod.description} • Verres haute protection UV400.`,
+      location: 'Abidjan, Côte d’Ivoire',
+      productName: prod.name,
+      productPrice: `${prod.price.toLocaleString('fr-FR')} FCFA`,
+      whatsappMsg: `Bonjour L’AURA EYEWEAR, j’ai vu la story ${prod.name} (${prod.price.toLocaleString('fr-FR')} FCFA) et je souhaite commander !`,
+    })),
+  }));
+
+  const currentStory = activeStoryIndex !== null ? storiesData[activeStoryIndex] : null;
   const currentSlide = currentStory ? currentStory.slides[activeSlideIndex] : null;
 
-  // Auto progression timer for stories (4 seconds per slide)
+  // Auto progression timer for stories (4.5 seconds per slide)
   useEffect(() => {
     if (activeStoryIndex === null || isPaused || !currentStory) return;
 
@@ -211,16 +84,14 @@ export const SocialStories: React.FC<SocialStoriesProps> = ({ customPhone }) => 
     const timer = setInterval(() => {
       setProgress((prev) => {
         if (prev >= 100) {
-          // Move to next slide or next story
           if (activeSlideIndex < currentStory.slides.length - 1) {
             setActiveSlideIndex((s) => s + 1);
             return 0;
-          } else if (activeStoryIndex < STORIES_DATA.length - 1) {
+          } else if (activeStoryIndex < storiesData.length - 1) {
             setActiveStoryIndex((s) => s + 1);
             setActiveSlideIndex(0);
             return 0;
           } else {
-            // Close stories viewer when reaching the very end
             setActiveStoryIndex(null);
             setActiveSlideIndex(0);
             return 0;
@@ -231,7 +102,7 @@ export const SocialStories: React.FC<SocialStoriesProps> = ({ customPhone }) => 
     }, intervalTime);
 
     return () => clearInterval(timer);
-  }, [activeStoryIndex, activeSlideIndex, isPaused, currentStory]);
+  }, [activeStoryIndex, activeSlideIndex, isPaused, currentStory, storiesData.length]);
 
   const openStory = (index: number) => {
     setActiveStoryIndex(index);
@@ -248,10 +119,10 @@ export const SocialStories: React.FC<SocialStoriesProps> = ({ customPhone }) => 
   const nextSlide = () => {
     if (!currentStory) return;
     if (activeSlideIndex < currentStory.slides.length - 1) {
-      setActiveSlideIndex((s) => s + 1);
+      setActiveSlideIndex((prev) => prev + 1);
       setProgress(0);
-    } else if (activeStoryIndex !== null && activeStoryIndex < STORIES_DATA.length - 1) {
-      setActiveStoryIndex((s) => s + 1);
+    } else if (activeStoryIndex !== null && activeStoryIndex < storiesData.length - 1) {
+      setActiveStoryIndex((prev) => (prev !== null ? prev + 1 : 0));
       setActiveSlideIndex(0);
       setProgress(0);
     } else {
@@ -262,197 +133,228 @@ export const SocialStories: React.FC<SocialStoriesProps> = ({ customPhone }) => 
   const prevSlide = () => {
     if (!currentStory) return;
     if (activeSlideIndex > 0) {
-      setActiveSlideIndex((s) => s - 1);
+      setActiveSlideIndex((prev) => prev - 1);
       setProgress(0);
     } else if (activeStoryIndex !== null && activeStoryIndex > 0) {
-      setActiveStoryIndex((s) => s - 1);
-      const prevStoryLength = STORIES_DATA[activeStoryIndex - 1].slides.length;
-      setActiveSlideIndex(prevStoryLength - 1);
+      const prevStoryIdx = activeStoryIndex - 1;
+      setActiveStoryIndex(prevStoryIdx);
+      setActiveSlideIndex(storiesData[prevStoryIdx].slides.length - 1);
       setProgress(0);
     }
   };
 
-  const toggleLike = (storyId: string) => {
-    setLikedStories((prev) => ({
-      ...prev,
-      [storyId]: !prev[storyId],
-    }));
+  const toggleLike = (e: React.MouseEvent, storyId: string) => {
+    e.stopPropagation();
+    setLikedStories((prev) => ({ ...prev, [storyId]: !prev[storyId] }));
   };
 
   return (
-    <section className="bg-white border-b border-[#E8E1D7] py-3.5 sm:py-5 overflow-hidden">
+    <section id="stories" className="py-6 sm:py-8 bg-[#FAF8F5] border-b border-[#EAE4DB] overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
+        
         {/* Section Mini Header */}
-        <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
-            <span className="relative flex h-2.5 w-2.5">
+            <span className="flex h-2.5 w-2.5 relative">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#C85A17] opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#C85A17]"></span>
             </span>
-            <span className="text-xs font-bold uppercase tracking-wider text-[#18261F]">
-              Stories & Nouveautés en Direct
+            <h2 className="font-serif text-sm sm:text-base font-bold text-[#18261F]">
+              Stories & Lookbook Abidjan
+            </h2>
+            <span className="text-[10px] text-[#B85318] bg-[#FAF0E6] border border-[#E8D4C0] px-2 py-0.5 rounded-full font-bold uppercase">
+              24H
             </span>
           </div>
-          <span className="text-[11px] text-[#6E7B74] font-medium hidden sm:inline-block">
+
+          <span className="text-[11px] text-[#4A5850] font-medium hidden sm:inline">
             Cliquez pour voir les modèles portés
           </span>
         </div>
 
-        {/* Stories Horizontal Scrolling Tray */}
-        <div className="flex items-center gap-3.5 sm:gap-6 overflow-x-auto pb-2 scrollbar-none scroll-smooth">
-          {STORIES_DATA.map((story, index) => (
+        {/* Stories Horizontal Carousel */}
+        <div className="flex items-center gap-4 sm:gap-6 overflow-x-auto pb-2 scrollbar-none no-scrollbar">
+          
+          {/* Add story / Photo upload trigger pill */}
+          {onOpenAdmin && (
             <button
-              key={story.id}
-              onClick={() => openStory(index)}
-              className="flex flex-col items-center gap-1.5 shrink-0 group focus:outline-hidden cursor-pointer"
+              onClick={onOpenAdmin}
+              className="flex flex-col items-center gap-1.5 shrink-0 group cursor-pointer"
             >
-              {/* Gradient Border Ring */}
-              <div className="w-16 h-16 sm:w-18 sm:h-18 rounded-full p-[2.5px] bg-gradient-to-tr from-[#C85A17] via-[#F4A261] to-[#E8C5A8] group-hover:scale-105 transition-all duration-300 shadow-sm">
-                <div className="w-full h-full rounded-full p-[2px] bg-white">
-                  <img
-                    src={story.coverImage}
-                    alt={story.title}
-                    referrerPolicy="no-referrer"
-                    className="w-full h-full rounded-full object-cover group-hover:brightness-105 transition-all"
-                  />
-                </div>
+              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full border-2 border-dashed border-[#C85A17] flex items-center justify-center bg-[#FAF0E6] group-hover:scale-105 transition-transform shadow-2xs">
+                <Camera className="w-6 h-6 text-[#C85A17]" />
               </div>
-
-              {/* Title & Tag */}
-              <span className="text-xs font-bold text-[#18261F] text-center max-w-[76px] truncate group-hover:text-[#C85A17] transition-colors">
-                {story.title}
+              <span className="text-[11px] font-bold text-[#18261F] truncate max-w-[70px]">
+                + Mes Photos
               </span>
             </button>
-          ))}
+          )}
+
+          {storiesData.length > 0 ? (
+            storiesData.map((story, index) => (
+              <button
+                key={story.id}
+                onClick={() => openStory(index)}
+                className="flex flex-col items-center gap-1.5 shrink-0 group cursor-pointer focus:outline-hidden"
+              >
+                {/* Gradient Border Circle Avatar */}
+                <div className="relative p-0.5 rounded-full bg-gradient-to-tr from-[#C85A17] via-[#F4A261] to-[#1E6B48] group-hover:scale-105 transition-transform duration-300 shadow-sm">
+                  <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full overflow-hidden border-2 border-[#FAF8F5] bg-[#FAF8F5]">
+                    <img
+                      src={story.coverImage}
+                      alt={story.title}
+                      referrerPolicy="no-referrer"
+                      className="w-full h-full object-cover object-center group-hover:scale-110 transition-transform duration-500"
+                    />
+                  </div>
+
+                  {/* Micro Tag Badge */}
+                  <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 bg-[#18261F] text-[#F4A261] text-[8px] font-black uppercase px-1.5 py-0.5 rounded-full shadow-2xs whitespace-nowrap border border-white/20">
+                    {story.tag}
+                  </span>
+                </div>
+
+                {/* Story Label */}
+                <span className="text-[11px] sm:text-xs font-bold text-[#18261F] group-hover:text-[#C85A17] transition-colors truncate max-w-[76px] sm:max-w-[84px] text-center mt-1">
+                  {story.title}
+                </span>
+              </button>
+            ))
+          ) : (
+            <div className="flex items-center gap-3 py-2 text-xs text-[#4A5850]">
+              <span>Importez vos premières photos de lunettes pour créer vos Stories Lookbook interactives.</span>
+            </div>
+          )}
+
         </div>
+
       </div>
 
-      {/* Fullscreen Story Modal (Instagram-style) */}
+      {/* FULLSCREEN STORIES MODAL VIEWER */}
       {activeStoryIndex !== null && currentStory && currentSlide && (
-        <div className="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-0 sm:p-4">
-          <div
-            className="relative w-full h-full sm:h-[88vh] sm:max-w-md bg-[#18261F] sm:rounded-3xl overflow-hidden shadow-2xl flex flex-col justify-between"
-            onMouseDown={() => setIsPaused(true)}
-            onMouseUp={() => setIsPaused(false)}
-            onTouchStart={() => setIsPaused(true)}
-            onTouchEnd={() => setIsPaused(false)}
+        <div 
+          className="fixed inset-0 z-50 bg-black/95 backdrop-blur-md flex items-center justify-center p-0 sm:p-4"
+          onClick={closeStory}
+        >
+          <div 
+            className="relative w-full h-full sm:h-[90vh] sm:max-w-md sm:rounded-3xl overflow-hidden bg-[#111] shadow-2xl flex flex-col justify-between"
+            onClick={(e) => e.stopPropagation()}
           >
-            {/* Top Progress Bars */}
-            <div className="absolute top-3 inset-x-3 z-30 flex items-center gap-1.5">
-              {currentStory.slides.map((slide, sIdx) => {
-                let barWidth = '0%';
-                if (sIdx < activeSlideIndex) barWidth = '100%';
-                else if (sIdx === activeSlideIndex) barWidth = `${progress}%`;
-
-                return (
-                  <div key={slide.id} className="h-1 flex-1 bg-white/30 rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-white transition-all duration-75 ease-linear rounded-full"
-                      style={{ width: barWidth }}
-                    ></div>
-                  </div>
-                );
-              })}
-            </div>
-
-            {/* Header: User avatar + info + close button */}
-            <div className="absolute top-6 inset-x-4 z-30 flex items-center justify-between text-white">
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-full border border-white/80 overflow-hidden">
-                  <img
-                    src={currentStory.coverImage}
-                    alt="L’AURA EYEWEAR"
-                    referrerPolicy="no-referrer"
-                    className="w-full h-full object-cover"
+            {/* Top Multi-segment Progress Bars */}
+            <div className="absolute top-3 left-3 right-3 z-30 flex items-center gap-1.5">
+              {currentStory.slides.map((slide, idx) => (
+                <div key={slide.id} className="h-1 flex-1 bg-white/30 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-white transition-all duration-75"
+                    style={{
+                      width:
+                        idx < activeSlideIndex
+                          ? '100%'
+                          : idx === activeSlideIndex
+                          ? `${progress}%`
+                          : '0%',
+                    }}
                   />
                 </div>
+              ))}
+            </div>
+
+            {/* Header: Brand Profile, Location, Close Button */}
+            <div className="absolute top-7 left-3 right-3 z-30 flex items-center justify-between text-white">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-full overflow-hidden border border-white/40">
+                  <img src={currentStory.coverImage} alt="Avatar" className="w-full h-full object-cover" />
+                </div>
                 <div>
-                  <div className="flex items-center gap-1.5 text-xs font-bold">
-                    <span>lauraeyewear.ci</span>
-                    <span className="text-white/60">• il y a 2h</span>
+                  <div className="flex items-center gap-1.5">
+                    <span className="font-bold text-xs">L'AURA EYEWEAR</span>
+                    <span className="text-[10px] bg-[#C85A17] px-1.5 py-0.2 rounded-full font-extrabold uppercase">
+                      {currentStory.tag}
+                    </span>
                   </div>
-                  <div className="text-[10px] text-white/80 font-medium">
-                    {currentSlide.location}
-                  </div>
+                  <span className="text-[10px] text-white/70 flex items-center gap-1">
+                    <span>📍</span> {currentSlide.location}
+                  </span>
                 </div>
               </div>
 
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={closeStory}
-                  className="w-8 h-8 rounded-full bg-black/40 hover:bg-black/70 flex items-center justify-center text-white backdrop-blur-xs transition-colors cursor-pointer"
-                  aria-label="Fermer"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
+              <button
+                onClick={closeStory}
+                className="p-2 rounded-full bg-black/40 hover:bg-black/70 text-white backdrop-blur-xs transition-colors cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
             </div>
 
-            {/* Slide Image Background */}
-            <div className="relative w-full h-full flex items-center justify-center bg-black">
+            {/* Story Visual & Navigation Tap Zones */}
+            <div className="relative w-full h-full flex items-center justify-center overflow-hidden bg-black">
               <img
                 src={currentSlide.image}
                 alt={currentSlide.headline}
-                referrerPolicy="no-referrer"
                 className="w-full h-full object-cover select-none"
               />
 
-              {/* Tap Left / Right touch handlers */}
+              {/* Left Tap Zone (Prev) */}
               <div
                 className="absolute inset-y-0 left-0 w-1/3 z-20 cursor-pointer"
                 onClick={prevSlide}
-                title="Précédent"
-              ></div>
+              />
+
+              {/* Right Tap Zone (Next) */}
               <div
                 className="absolute inset-y-0 right-0 w-1/3 z-20 cursor-pointer"
                 onClick={nextSlide}
-                title="Suivant"
-              ></div>
+              />
             </div>
 
-            {/* Bottom Content & Interactive CTA Card */}
-            <div className="absolute bottom-0 inset-x-0 z-30 p-4 sm:p-5 bg-gradient-to-t from-black via-black/80 to-transparent text-white pt-16">
-              <div className="mb-3">
-                <span className="inline-block bg-[#C85A17] text-white text-[10px] font-bold px-2 py-0.5 rounded-full mb-1.5">
-                  {currentStory.tag}
-                </span>
-                <h3 className="text-base sm:text-lg font-bold leading-tight drop-shadow-xs">
-                  {currentSlide.headline}
-                </h3>
-                <p className="text-xs text-white/90 mt-1 font-medium leading-relaxed drop-shadow-xs">
-                  {currentSlide.caption}
-                </p>
+            {/* Bottom Content Card & Direct WhatsApp Buy CTA */}
+            <div className="absolute bottom-0 inset-x-0 z-30 p-4 bg-gradient-to-t from-black via-black/80 to-transparent text-white pt-10">
+              
+              {/* Product details & price pill */}
+              <div className="flex items-end justify-between gap-2 mb-2.5">
+                <div>
+                  <h3 className="font-serif text-lg font-bold text-white">
+                    {currentSlide.headline}
+                  </h3>
+                  <p className="text-xs text-white/80 line-clamp-2 mt-0.5">
+                    {currentSlide.caption}
+                  </p>
+                </div>
+
+                {currentSlide.productPrice && (
+                  <span className="px-3 py-1 rounded-full bg-[#C85A17] text-white font-bold text-xs whitespace-nowrap shadow-md">
+                    {currentSlide.productPrice}
+                  </span>
+                )}
               </div>
 
-              {/* Direct WhatsApp Order Button */}
-              {currentSlide.whatsappMsg && (
-                <div className="flex items-center gap-2 pt-1">
-                  <a
-                    href={buildDirectMessageWhatsAppUrl(currentSlide.whatsappMsg, customPhone)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex-1 bg-[#1E6B48] hover:bg-[#155236] text-white font-bold py-2.5 px-4 rounded-xl text-xs flex items-center justify-center gap-2 transition-all shadow-lg hover:scale-[1.02]"
-                  >
-                    <MessageCircle className="w-4 h-4 fill-white" />
-                    <span>Commander sur WhatsApp • {currentSlide.productPrice || '35 000 FCFA'}</span>
-                  </a>
+              {/* Action Bar: WhatsApp Button + Like */}
+              <div className="flex items-center gap-2 pt-2 border-t border-white/20">
+                <a
+                  href={buildDirectMessageWhatsAppUrl(
+                    currentSlide.whatsappMsg || `Bonjour L'AURA Eyewear, je souhaite commander ${currentSlide.headline}`,
+                    customPhone
+                  )}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex-1 py-3 px-4 rounded-2xl bg-[#1E6B48] hover:bg-[#165236] text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg transition-all active:scale-98"
+                >
+                  <MessageCircle className="w-4 h-4 fill-white" />
+                  <span>Commander ce modèle en 1 clic</span>
+                </a>
 
-                  <button
-                    onClick={() => toggleLike(currentSlide.id)}
-                    className={`w-10 h-10 rounded-xl flex items-center justify-center border transition-all cursor-pointer ${
-                      likedStories[currentSlide.id]
-                        ? 'bg-rose-600 border-rose-500 text-white'
-                        : 'bg-white/20 hover:bg-white/30 border-white/30 text-white'
-                    }`}
-                    aria-label="Aimer cette story"
-                  >
-                    <Heart
-                      className={`w-4 h-4 ${likedStories[currentSlide.id] ? 'fill-white' : ''}`}
-                    />
-                  </button>
-                </div>
-              )}
+                <button
+                  onClick={(e) => toggleLike(e, currentSlide.id)}
+                  className={`p-3 rounded-2xl border border-white/20 backdrop-blur-md transition-all cursor-pointer ${
+                    likedStories[currentSlide.id] ? 'bg-rose-600 text-white' : 'bg-white/10 text-white hover:bg-white/20'
+                  }`}
+                >
+                  <Heart className={`w-4 h-4 ${likedStories[currentSlide.id] ? 'fill-white' : ''}`} />
+                </button>
+              </div>
+
             </div>
+
           </div>
         </div>
       )}

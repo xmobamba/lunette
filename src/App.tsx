@@ -21,17 +21,18 @@ import { SocialStories } from './components/SocialStories';
 import { MobileSocialNav } from './components/MobileSocialNav';
 
 export default function App() {
-  // 1. Dynamic Products State with localStorage persistence (v2 catalog with updated 35000 FCFA price)
+  // 1. Dynamic Products State with localStorage persistence (v3 catalog - user custom images)
   const [products, setProducts] = useState<Product[]>(() => {
     try {
-      const saved = localStorage.getItem('aura_products_v2');
-      return saved ? JSON.parse(saved) : PRODUCTS;
+      const saved = localStorage.getItem('aura_products_v3');
+      if (saved) return JSON.parse(saved);
+      return PRODUCTS;
     } catch {
       return PRODUCTS;
     }
   });
 
-  // 2. Dynamic Store Config State with localStorage persistence (v2 with phone +225 08 48 10 12)
+  // 2. Dynamic Store Config State with localStorage persistence
   const [storeConfig, setStoreConfig] = useState<StoreConfig>(() => {
     try {
       const saved = localStorage.getItem('aura_store_config_v2');
@@ -116,10 +117,24 @@ export default function App() {
   const handleUpdateProducts = (newProducts: Product[]) => {
     setProducts(newProducts);
     try {
-      localStorage.setItem('aura_products_v2', JSON.stringify(newProducts));
+      localStorage.setItem('aura_products_v3', JSON.stringify(newProducts));
     } catch (err) {
       console.error(err);
     }
+  };
+
+  // Single Product Image Update
+  const handleUpdateProductImage = (productId: string, newImage: string) => {
+    const updated = products.map((p) => {
+      if (p.id === productId) {
+        return {
+          ...p,
+          images: [newImage, ...(p.images || []).filter((img) => img !== newImage)],
+        };
+      }
+      return p;
+    });
+    handleUpdateProducts(updated);
   };
 
   // Synchronize store configuration updates
@@ -151,6 +166,7 @@ export default function App() {
         storeConfig={storeConfig}
         customPhone={storeConfig.phoneRaw}
         promos={promos}
+        onOpenAdmin={() => setIsAdminOpen(true)}
       />
 
       <main className="pb-24 sm:pb-0">
@@ -159,21 +175,27 @@ export default function App() {
           promos={promos}
           storeConfig={storeConfig}
           customPhone={storeConfig.phoneRaw}
+          products={products}
         />
 
-        {/* 2. Hero Section */}
+        {/* 2. Hero Section with Custom Upload */}
         <Hero customPhone={storeConfig.phoneRaw} />
 
-        {/* 3. Instagram & TikTok Interactive Stories Reel (Lookbook, Tendances, Unboxing) */}
-        <SocialStories customPhone={storeConfig.phoneRaw} />
+        {/* 3. Instagram & TikTok Interactive Stories Reel */}
+        <SocialStories
+          customPhone={storeConfig.phoneRaw}
+          products={products}
+        />
 
-        {/* 4. Products Collection & Categories Grid */}
+        {/* 4. Products Collection & Categories Grid with direct photo dropzone */}
         <ProductGrid
           products={products}
           onOpenQuickView={(p) => setSelectedProduct(p)}
           favorites={favorites}
           onToggleFavorite={handleToggleFavorite}
           customPhone={storeConfig.phoneRaw}
+          onUpdateProducts={handleUpdateProducts}
+          onOpenAdmin={() => setIsAdminOpen(true)}
         />
 
         {/* 6. Best-sellers Highlight */}
@@ -190,7 +212,11 @@ export default function App() {
         <SocialProof />
 
         {/* 9. Instagram & Social Community Feed */}
-        <InstagramFeed />
+        <InstagramFeed
+          products={products}
+          customPhone={storeConfig.phoneRaw}
+          onOpenAdmin={() => setIsAdminOpen(true)}
+        />
 
         {/* 10. FAQ Accordion */}
         <FAQ />
@@ -218,16 +244,17 @@ export default function App() {
         customPhone={storeConfig.phoneRaw}
       />
 
-      {/* 13. Product Quick-View Modal (Fiche Rapide) */}
+      {/* 15. Product Quick-View Modal (Fiche Rapide) */}
       <ProductModal
         product={selectedProduct}
         onClose={() => setSelectedProduct(null)}
         isFavorite={selectedProduct ? favorites.includes(selectedProduct.id) : false}
         onToggleFavorite={handleToggleFavorite}
         customPhone={storeConfig.phoneRaw}
+        onUpdateProductImage={handleUpdateProductImage}
       />
 
-      {/* 14. Full Manual Store & Product Management Dashboard */}
+      {/* 16. Full Manual Store & Photo Management Dashboard */}
       <AdminManagerModal
         isOpen={isAdminOpen}
         onClose={() => {

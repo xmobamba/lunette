@@ -9,47 +9,20 @@ import {
   ChevronRight, 
   ShoppingBag,
   Flame,
-  Truck
+  Truck,
+  Tag
 } from 'lucide-react';
-import { PromoBannerItem, StoreConfig } from '../types';
+import { PromoBannerItem, StoreConfig, Product } from '../types';
 import { STORE_CONFIG } from '../config/store';
 import { DEFAULT_PROMOS } from '../data/promos';
 import { buildCustomPromoWhatsAppUrl } from '../utils/whatsapp';
-
-// High definition luxury eyewear photos for the left edge fade
-import imgChanelShield from '../assets/images/chanel_shield_black_1787218034317.jpg';
-import imgBvlgariAviator from '../assets/images/bvlgari_aviator_burgundy_1787242471047.jpg';
-import imgMiuMiuOval from '../assets/images/miumiu_oval_black_1787218119854.jpg';
-import imgCelineHavana from '../assets/images/celine_triomphe_havana_1787218062413.jpg';
-import imgBvlgariRimless from '../assets/images/bvlgari_rimless_black_1787218174732.jpg';
-import imgCelineBlack from '../assets/images/celine_triomphe_black_1787218159931.jpg';
-import imgLvPilot from '../assets/images/lv_pilot_cream_1787218102121.jpg';
-import imgBvlgariAmber from '../assets/images/bvlgari_serpenti_amber_1787218074048.jpg';
-import imgCartierOval from '../assets/images/cartier_cdecor_oval_1787218049335.jpg';
-import imgDiorEmerald from '../assets/images/dior_cd_emerald_1787218090618.jpg';
-import imgCelineOvalTortoise from '../assets/images/celine_oval_tortoise_1787242486013.jpg';
-import imgFredGold from '../assets/images/fred_cable_gold_1787218135047.jpg';
 
 interface PromoBannerProps {
   promos?: PromoBannerItem[];
   storeConfig?: StoreConfig;
   customPhone?: string;
+  products?: Product[];
 }
-
-const GLASSES_VISUALS = [
-  { image: imgChanelShield, name: 'Chanel Shield CC', price: '35 000 F' },
-  { image: imgBvlgariAviator, name: 'Bvlgari Aviateur Bordeaux', price: '35 000 F' },
-  { image: imgMiuMiuOval, name: 'Miu Miu Ovale Couture', price: '35 000 F' },
-  { image: imgCelineHavana, name: 'Céline Carrée Écaille', price: '35 000 F' },
-  { image: imgBvlgariRimless, name: 'Bvlgari Sans Monture Noire', price: '35 000 F' },
-  { image: imgCelineBlack, name: 'Céline Carrée Noire', price: '35 000 F' },
-  { image: imgLvPilot, name: 'LV Aviateur Nude', price: '35 000 F' },
-  { image: imgBvlgariAmber, name: 'Bvlgari Serpenti Ambrée', price: '35 000 F' },
-  { image: imgCartierOval, name: 'Cartier C-Décor Ovale', price: '35 000 F' },
-  { image: imgDiorEmerald, name: 'Dior CD Aviateur Émeraude', price: '35 000 F' },
-  { image: imgCelineOvalTortoise, name: 'Céline Ovale Écaille', price: '35 000 F' },
-  { image: imgFredGold, name: 'Fred Force 10 Câble Or', price: '35 000 F' },
-];
 
 const TICKER_ITEMS = [
   { icon: '🚚', text: 'Livraison express 24h offerte dès 2 paires à Abidjan' },
@@ -64,6 +37,7 @@ export const PromoBanner: React.FC<PromoBannerProps> = ({
   promos = DEFAULT_PROMOS,
   storeConfig = STORE_CONFIG,
   customPhone,
+  products = [],
 }) => {
   const activePromos = promos.filter(
     (p) => p.isActive && (p.position === 'main' || p.position === 'both' || !p.position)
@@ -72,6 +46,12 @@ export const PromoBanner: React.FC<PromoBannerProps> = ({
   const [currentIndex, setCurrentIndex] = useState(0);
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
   const [timeLeft, setTimeLeft] = useState({ hours: 11, minutes: 28, seconds: 45 });
+
+  // Get first product with image if available
+  const productsWithImages = products.filter((p) => p.images && p.images.length > 0);
+  const leftDisplayImage = productsWithImages.length > 0
+    ? productsWithImages[currentIndex % productsWithImages.length].images[0]
+    : null;
 
   // Live countdown timer
   useEffect(() => {
@@ -98,7 +78,6 @@ export const PromoBanner: React.FC<PromoBannerProps> = ({
   if (activePromos.length === 0) return null;
 
   const currentPromo = activePromos[currentIndex] || activePromos[0];
-  const currentGlasses = GLASSES_VISUALS[currentIndex % GLASSES_VISUALS.length];
   const promoCode = currentPromo.id.includes('duo') 
     ? 'AURA-DUO26' 
     : currentPromo.id.includes('pack') 
@@ -119,36 +98,26 @@ export const PromoBanner: React.FC<PromoBannerProps> = ({
 
   return (
     <div id="promo-header-banner" className="relative z-30 pt-[72px] sm:pt-[76px] lg:pt-[84px] bg-[#FAF8F5]">
-      {/* BANNIÈRE COMPACTE (TAILLE RÉDUITE DE MOITIÉ) SITUÉE À L'ENTÊTE */}
+      {/* BANNIÈRE COMPACTE SITUÉE À L'ENTÊTE */}
       <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-6 py-1.5 sm:py-2">
         <div className="relative rounded-2xl sm:rounded-3xl overflow-hidden bg-gradient-to-r from-[#0D1511] via-[#14221A] to-[#0A110D] text-white border border-[#2B3E33] shadow-lg">
           
-          {/* ========================================================================= */}
-          {/* 1. LUNETTES À L'EXTRÉMITÉ GAUCHE AVEC FONDU PROGRESSIF (BLENDED MASK) */}
-          {/* ========================================================================= */}
-          <div className="absolute inset-y-0 left-0 w-28 sm:w-48 md:w-64 lg:w-72 pointer-events-none z-0 overflow-hidden">
-            <img
-              src={currentGlasses.image}
-              alt={currentGlasses.name}
-              className="w-full h-full object-cover object-left scale-110 opacity-75 sm:opacity-85 transition-all duration-700"
-            />
-            {/* Fondu horizontal vers la droite */}
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#0D1511]/70 to-[#0D1511] z-10" />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#0D1511]/90 via-transparent to-[#0D1511]/40 sm:hidden z-10" />
-            
-            {/* Petit badge discret du modèle */}
-            <div className="hidden md:flex absolute bottom-1.5 left-2 z-20 items-center gap-1 px-2 py-0.5 rounded-full bg-black/60 backdrop-blur-xs text-[9px] text-white/80 border border-white/10">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#C85A17]"></span>
-              <span className="font-semibold truncate max-w-[90px]">{currentGlasses.name}</span>
+          {/* OPTIONAL LUNETTES À L'EXTRÉMITÉ GAUCHE (SI PHOTOS AJOUTÉES) */}
+          {leftDisplayImage && (
+            <div className="absolute inset-y-0 left-0 w-28 sm:w-48 md:w-64 lg:w-72 pointer-events-none z-0 overflow-hidden">
+              <img
+                src={leftDisplayImage}
+                alt="Offre spéciale L'AURA Eyewear"
+                className="w-full h-full object-cover object-left scale-110 opacity-75 sm:opacity-85 transition-all duration-700"
+              />
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#0D1511]/70 to-[#0D1511] z-10" />
             </div>
-          </div>
+          )}
 
           {/* Luxury subtle ambient glow */}
           <div className="absolute -top-12 -right-12 w-48 h-48 bg-[#C85A17]/20 rounded-full blur-2xl pointer-events-none"></div>
 
-          {/* ========================================================================= */}
-          {/* 2. RUBAN D'INFORMATIONS DÉROULANTES EN CONTINU (CONTINUOUS TICKER) */}
-          {/* ========================================================================= */}
+          {/* RUBAN D'INFORMATIONS DÉROULANTES EN CONTINU (CONTINUOUS TICKER) */}
           <div className="relative z-20 bg-black/45 border-b border-white/10 py-1 overflow-hidden">
             <div className="animate-marquee flex items-center gap-6 text-[10px] sm:text-[11px] font-semibold text-white/90">
               {TICKER_ITEMS.concat(TICKER_ITEMS).map((item, idx) => (
@@ -161,14 +130,12 @@ export const PromoBanner: React.FC<PromoBannerProps> = ({
             </div>
           </div>
 
-          {/* ========================================================================= */}
-          {/* 3. CONTENU COMPACT DE L'OFFRE EN COURS & ACTIONS RAPIDES */}
-          {/* ========================================================================= */}
+          {/* CONTENU COMPACT DE L'OFFRE EN COURS & ACTIONS RAPIDES */}
           <div className="relative z-10 px-3 sm:px-5 lg:px-6 py-2.5 sm:py-3.5">
             <div className="flex flex-col md:flex-row items-center justify-between gap-3">
               
-              {/* Info Principale (décalée pour laisser le fondu des lunettes à gauche) */}
-              <div className="flex items-center gap-3 pl-16 sm:pl-28 md:pl-36 lg:pl-44 text-left w-full md:w-auto">
+              {/* Info Principale */}
+              <div className={`flex items-center gap-3 text-left w-full md:w-auto ${leftDisplayImage ? 'pl-16 sm:pl-28 md:pl-36 lg:pl-44' : 'pl-2'}`}>
                 <div className="hidden sm:flex shrink-0 w-8 h-8 rounded-xl bg-[#C85A17]/25 border border-[#C85A17]/40 items-center justify-center text-[#F4A261]">
                   <Flame className="w-4 h-4" />
                 </div>
@@ -219,7 +186,7 @@ export const PromoBanner: React.FC<PromoBannerProps> = ({
                   href={buildCustomPromoWhatsAppUrl(currentPromo, customPhone)}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 px-3.5 sm:px-4 py-1.5 rounded-full bg-[#1E6B48] hover:bg-[#165236] text-white font-bold text-xs shadow-md hover:scale-105 active:scale-95 transition-all border border-white/20 whitespace-nowrap"
+                  className="inline-flex items-center gap-1.5 px-3.5 sm:px-4 py-1.5 rounded-full bg-[#1E6B48] hover:bg-[#165236] text-white font-bold text-xs shadow-md hover:scale-105 active:scale-95 transition-all border border-white/20 whitespace-nowrap cursor-pointer"
                 >
                   <MessageCircle className="w-3.5 h-3.5 fill-white" />
                   <span>Commander</span>

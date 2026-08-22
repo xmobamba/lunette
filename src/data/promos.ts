@@ -1,6 +1,4 @@
 import { PromoBannerItem } from '../types';
-import imgChanelShield from '../assets/images/chanel_shield_black_1787218034317.jpg';
-import imgCartierOval from '../assets/images/cartier_cdecor_oval_1787218049335.jpg';
 
 export const THEME_STYLES = {
   orange: {
@@ -83,7 +81,6 @@ export const DEFAULT_PROMOS: PromoBannerItem[] = [
     theme: 'orange',
     discountTag: 'LIVRAISON 0 FCFA',
     countdownText: 'Offre valable cette semaine',
-    image: imgChanelShield,
     isActive: true,
     position: 'both',
   },
@@ -98,7 +95,6 @@ export const DEFAULT_PROMOS: PromoBannerItem[] = [
     theme: 'gold',
     discountTag: '-10 000 FCFA',
     countdownText: 'Stock limité Abidjan',
-    image: imgCartierOval,
     isActive: true,
     position: 'both',
   },
@@ -113,7 +109,6 @@ export const DEFAULT_PROMOS: PromoBannerItem[] = [
     theme: 'green',
     discountTag: 'ÉCRIN OFFERT',
     countdownText: '100% Neuf & Garanti',
-    image: imgChanelShield,
     isActive: true,
     position: 'both',
   },

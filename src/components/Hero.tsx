@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   MessageCircle, 
   ArrowDown, 
@@ -9,36 +9,33 @@ import {
   Instagram, 
   Heart, 
   Flame, 
-  ShoppingBag,
-  Eye,
-  ChevronLeft,
-  ChevronRight
+  ShoppingBag, 
+  Camera, 
+  Upload, 
+  Trash2, 
+  ChevronLeft, 
+  ChevronRight,
+  Plus
 } from 'lucide-react';
 import { buildGeneralWhatsAppUrl } from '../utils/whatsapp';
-
-import imgChanelShield from '../assets/images/chanel_shield_black_1787218034317.jpg';
-import imgBvlgariAviator from '../assets/images/bvlgari_aviator_burgundy_1787242471047.jpg';
-import imgMiuMiuOval from '../assets/images/miumiu_oval_black_1787218119854.jpg';
-import imgCelineHavana from '../assets/images/celine_triomphe_havana_1787218062413.jpg';
-import imgCartierOval from '../assets/images/cartier_cdecor_oval_1787218049335.jpg';
-import imgDiorEmerald from '../assets/images/dior_cd_emerald_1787218090618.jpg';
-
-const HERO_FEATURED_MODELS = [
-  { image: imgChanelShield, name: 'Chanel Masque Shield CC', tag: 'Bestseller 2026', price: '35 000 F' },
-  { image: imgBvlgariAviator, name: 'Bvlgari Aviateur Bordeaux', tag: 'Collection Joaillerie', price: '35 000 F' },
-  { image: imgMiuMiuOval, name: 'Miu Miu Ovale Couture', tag: 'Tendance Paris', price: '35 000 F' },
-  { image: imgCartierOval, name: 'Cartier C Décor Prestige', tag: 'Édition Or 24K', price: '35 000 F' },
-  { image: imgDiorEmerald, name: 'Dior CD Aviateur Émeraude', tag: 'Haute Couture', price: '35 000 F' },
-];
+import { getStoredHeroImage, setStoredHeroImage, fileToBase64 } from '../utils/imageUpload';
+import { Product } from '../types';
 
 interface HeroProps {
   customPhone?: string;
+  products?: Product[];
 }
 
-export const Hero: React.FC<HeroProps> = ({ customPhone }) => {
+export const Hero: React.FC<HeroProps> = ({ customPhone, products = [] }) => {
   const [liveViewers, setLiveViewers] = useState(19);
+  const [customHeroImg, setCustomHeroImg] = useState<string | null>(() => getStoredHeroImage());
+  const [isUploading, setIsUploading] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const [heroModelIndex, setHeroModelIndex] = useState(0);
+  // Fallback to first available product with image if no custom hero image
+  const productWithImage = products.find((p) => p.images && p.images.length > 0);
+  const activeDisplayImage = customHeroImg || (productWithImage ? productWithImage.images[0] : null);
 
   // Subtle live viewer simulation for social buzz
   useEffect(() => {
@@ -52,18 +49,57 @@ export const Hero: React.FC<HeroProps> = ({ customPhone }) => {
     return () => clearInterval(interval);
   }, []);
 
-  // Auto rotate hero models
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setHeroModelIndex((prev) => (prev + 1) % HERO_FEATURED_MODELS.length);
-    }, 5000);
-    return () => clearInterval(timer);
-  }, []);
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
 
-  const currentHeroModel = HERO_FEATURED_MODELS[heroModelIndex];
+    try {
+      setIsUploading(true);
+      const base64 = await fileToBase64(file, 1200, 1200, 0.88);
+      setCustomHeroImg(base64);
+      setStoredHeroImage(base64);
+    } catch (err) {
+      console.error('Failed to upload hero image:', err);
+    } finally {
+      setIsUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
+  const handleDrop = async (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    const file = e.dataTransfer.files?.[0];
+    if (!file || !file.type.startsWith('image/')) return;
+
+    try {
+      setIsUploading(true);
+      const base64 = await fileToBase64(file, 1200, 1200, 0.88);
+      setCustomHeroImg(base64);
+      setStoredHeroImage(base64);
+    } catch (err) {
+      console.error('Failed to drop hero image:', err);
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleRemoveHeroImage = () => {
+    setCustomHeroImg(null);
+    setStoredHeroImage(null);
+  };
 
   return (
     <section id="top" className="relative min-h-[75vh] lg:min-h-[82vh] bg-gradient-to-b from-[#F7F3EC] via-[#FAF8F5] to-[#F3EFEA] text-[#18261F] flex items-center pt-6 sm:pt-10 pb-12 sm:pb-16 overflow-hidden">
+      {/* Hidden file input */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        onChange={handleFileUpload}
+        className="hidden"
+      />
+
       {/* Background Soft Ambient Luxury Glow */}
       <div className="absolute top-1/4 left-1/4 -translate-x-1/2 -translate-y-1/2 w-[400px] sm:w-[500px] h-[400px] sm:h-[500px] bg-[#E8C5A8]/25 rounded-full blur-[140px] pointer-events-none"></div>
       <div className="absolute bottom-10 right-10 w-[350px] sm:w-[450px] h-[350px] sm:h-[450px] bg-[#C8DEC5]/25 rounded-full blur-[130px] pointer-events-none"></div>
@@ -123,7 +159,7 @@ export const Hero: React.FC<HeroProps> = ({ customPhone }) => {
               <a
                 id="hero-cta-collection"
                 href="#collection"
-                className="inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-full bg-[#C85A17] hover:bg-[#A84A12] text-white font-bold text-xs sm:text-sm tracking-wide shadow-md hover:shadow-lg active:scale-[0.98] transition-all"
+                className="inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-full bg-[#C85A17] hover:bg-[#A84A12] text-white font-bold text-xs sm:text-sm tracking-wide shadow-md hover:shadow-lg active:scale-[0.98] transition-all cursor-pointer"
               >
                 <span>Shopper la collection</span>
                 <ArrowDown className="w-4 h-4" />
@@ -135,7 +171,7 @@ export const Hero: React.FC<HeroProps> = ({ customPhone }) => {
                 href={buildGeneralWhatsAppUrl('general', customPhone)}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-full bg-[#1E6B48] hover:bg-[#185539] text-white font-bold text-xs sm:text-sm tracking-wide shadow-md hover:shadow-lg active:scale-[0.98] transition-all border border-white/15"
+                className="inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-full bg-[#1E6B48] hover:bg-[#185539] text-white font-bold text-xs sm:text-sm tracking-wide shadow-md hover:shadow-lg active:scale-[0.98] transition-all border border-white/15 cursor-pointer"
               >
                 <MessageCircle className="w-4 h-4 fill-white" />
                 <span>Commander sur WhatsApp</span>
@@ -164,63 +200,109 @@ export const Hero: React.FC<HeroProps> = ({ customPhone }) => {
             </div>
           </div>
 
-          {/* Right Column: Hero High-fashion Lifestyle Image with Interactive Lookbook Tag */}
+          {/* Right Column: Hero Interactive Photo Stage & Custom Uploader */}
           <div className="lg:col-span-5 relative mt-2 lg:mt-0">
             <div className="relative mx-auto max-w-md lg:max-w-none">
               {/* Outer decorative glow */}
               <div className="absolute -inset-2 rounded-3xl bg-gradient-to-tr from-[#E8C5A8]/40 via-white/50 to-[#C8DEC5]/40 blur-md pointer-events-none"></div>
 
-              {/* Image Card */}
-              <div className="relative rounded-3xl overflow-hidden border border-[#E8E1D7] shadow-xl bg-white group">
-                <img
-                  src={currentHeroModel.image}
-                  alt={currentHeroModel.name}
-                  referrerPolicy="no-referrer"
-                  className="w-full h-[360px] sm:h-[480px] object-cover object-center transform group-hover:scale-104 transition-all duration-700"
-                  loading="eager"
-                />
+              {/* Image / Upload Stage Card */}
+              <div
+                onDragOver={(e) => {
+                  e.preventDefault();
+                  setIsDragging(true);
+                }}
+                onDragLeave={() => setIsDragging(false)}
+                onDrop={handleDrop}
+                className={`relative rounded-3xl overflow-hidden border border-[#E8E1D7] shadow-xl bg-white group min-h-[360px] sm:min-h-[480px] flex flex-col items-center justify-center transition-all ${
+                  isDragging ? 'bg-[#FAF0E6] border-2 border-dashed border-[#C85A17]' : ''
+                }`}
+              >
+                {activeDisplayImage ? (
+                  <>
+                    <img
+                      src={activeDisplayImage}
+                      alt="L'AURA Eyewear - Collection Abidjan"
+                      referrerPolicy="no-referrer"
+                      className="w-full h-[360px] sm:h-[480px] object-cover object-center transform group-hover:scale-104 transition-all duration-700"
+                      loading="eager"
+                    />
 
-                {/* Floating UV400 Badge Top Right */}
-                <div className="absolute top-3 right-3 bg-[#FAF8F5]/95 backdrop-blur-md border border-[#C8DEC5] px-3 py-1 rounded-full flex items-center gap-1.5 text-[11px] text-[#1E6B48] font-bold shadow-2xs">
-                  <ShieldCheck className="w-3.5 h-3.5 text-[#1E6B48]" />
-                  <span>100% Protection UV400</span>
-                </div>
+                    {/* Floating UV400 Badge Top Right */}
+                    <div className="absolute top-3 right-3 bg-[#FAF8F5]/95 backdrop-blur-md border border-[#C8DEC5] px-3 py-1 rounded-full flex items-center gap-1.5 text-[11px] text-[#1E6B48] font-bold shadow-2xs">
+                      <ShieldCheck className="w-3.5 h-3.5 text-[#1E6B48]" />
+                      <span>100% Protection UV400</span>
+                    </div>
 
-                {/* Model tag top left */}
-                <div className="absolute top-3 left-3 bg-[#18261F]/90 backdrop-blur-md border border-white/20 px-3 py-1 rounded-full flex items-center gap-1.5 text-[10px] text-[#F4A261] font-bold shadow-2xs">
-                  <Sparkles className="w-3 h-3" />
-                  <span>{currentHeroModel.tag}</span>
-                </div>
+                    {/* Badge top left */}
+                    <div className="absolute top-3 left-3 bg-[#18261F]/90 backdrop-blur-md border border-white/20 px-3 py-1 rounded-full flex items-center gap-1.5 text-[10px] text-[#F4A261] font-bold shadow-2xs">
+                      <Sparkles className="w-3 h-3" />
+                      <span>Haute Couture</span>
+                    </div>
 
-                {/* Social Lookbook Hotspot Tag over sunglasses */}
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20">
-                  <a
-                    href="#collection"
-                    className="inline-flex items-center gap-2 bg-[#18261F]/90 hover:bg-[#18261F] text-white px-3.5 py-2 rounded-full text-xs font-bold shadow-xl border border-white/30 backdrop-blur-md transition-all hover:scale-105"
+                    {/* Floating Image Actions (Changer / Supprimer) */}
+                    <div className="absolute top-12 left-3 flex items-center gap-1.5 z-20">
+                      <button
+                        onClick={() => fileInputRef.current?.click()}
+                        className="px-2.5 py-1 rounded-full bg-black/75 hover:bg-black text-white text-[10px] font-bold backdrop-blur-md flex items-center gap-1 shadow-md transition-all cursor-pointer"
+                        title="Remplacer cette photo d'accueil"
+                      >
+                        <Camera className="w-3 h-3 text-[#F4A261]" />
+                        <span>Changer photo</span>
+                      </button>
+                      {customHeroImg && (
+                        <button
+                          onClick={handleRemoveHeroImage}
+                          className="p-1 rounded-full bg-red-600/80 hover:bg-red-600 text-white shadow-md transition-all cursor-pointer"
+                          title="Supprimer la photo personnalisée"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Lookbook Callout */}
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20">
+                      <a
+                        href="#collection"
+                        className="inline-flex items-center gap-2 bg-[#18261F]/90 hover:bg-[#18261F] text-white px-4 py-2 rounded-full text-xs font-bold shadow-xl border border-white/30 backdrop-blur-md transition-all hover:scale-105"
+                      >
+                        <span className="w-2 h-2 rounded-full bg-[#C85A17] animate-ping"></span>
+                        <span>Découvrir la collection</span>
+                        <ShoppingBag className="w-3.5 h-3.5 text-[#F4A261]" />
+                      </a>
+                    </div>
+                  </>
+                ) : (
+                  /* Clean interactive upload state when no image */
+                  <div
+                    onClick={() => fileInputRef.current?.click()}
+                    className="w-full h-full p-8 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-[#FAF0E6]/40 transition-colors"
                   >
-                    <span className="w-2 h-2 rounded-full bg-[#C85A17] animate-ping"></span>
-                    <span>{currentHeroModel.name} • {currentHeroModel.price}</span>
-                    <ShoppingBag className="w-3.5 h-3.5 text-[#F4A261]" />
-                  </a>
-                </div>
+                    <div className="w-20 h-20 rounded-3xl bg-[#FAF0E6] border border-[#E8D4C0] flex items-center justify-center text-[#C85A17] mb-4 shadow-sm group-hover:scale-105 transition-transform">
+                      {isUploading ? (
+                        <div className="w-8 h-8 border-3 border-[#C85A17] border-t-transparent rounded-full animate-spin" />
+                      ) : (
+                        <Camera className="w-10 h-10" />
+                      )}
+                    </div>
 
-                {/* Mini Navigation Controls */}
-                <div className="absolute top-1/2 -translate-y-1/2 inset-x-2 flex justify-between pointer-events-none z-20">
-                  <button
-                    onClick={() => setHeroModelIndex((prev) => (prev - 1 + HERO_FEATURED_MODELS.length) % HERO_FEATURED_MODELS.length)}
-                    className="w-8 h-8 rounded-full bg-black/45 hover:bg-black/75 text-white flex items-center justify-center backdrop-blur-xs transition-all pointer-events-auto cursor-pointer"
-                    aria-label="Modèle précédent"
-                  >
-                    <ChevronLeft className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={() => setHeroModelIndex((prev) => (prev + 1) % HERO_FEATURED_MODELS.length)}
-                    className="w-8 h-8 rounded-full bg-black/45 hover:bg-black/75 text-white flex items-center justify-center backdrop-blur-xs transition-all pointer-events-auto cursor-pointer"
-                    aria-label="Modèle suivant"
-                  >
-                    <ChevronRight className="w-4 h-4" />
-                  </button>
-                </div>
+                    <h3 className="font-serif text-lg font-bold text-[#18261F] mb-1">
+                      Ajoutez votre photo d'en-tête
+                    </h3>
+                    <p className="text-xs text-[#4A5850] max-w-xs mb-4">
+                      Glissez votre photo ici ou cliquez pour choisir une image de lunettes depuis votre appareil.
+                    </p>
+
+                    <button
+                      type="button"
+                      className="px-5 py-2.5 rounded-full bg-[#C85A17] hover:bg-[#A84A12] text-white text-xs font-bold shadow-md flex items-center gap-1.5 cursor-pointer"
+                    >
+                      <Upload className="w-4 h-4" />
+                      <span>Importer une image</span>
+                    </button>
+                  </div>
+                )}
 
                 {/* Bottom Social Proof User Card */}
                 <div className="absolute bottom-3 left-3 right-3 bg-[#18261F]/90 backdrop-blur-md text-white p-3 sm:p-3.5 rounded-2xl border border-white/15 flex items-center justify-between shadow-xl">

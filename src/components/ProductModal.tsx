@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Product } from '../types';
 import {
   X,
@@ -12,8 +12,11 @@ import {
   Heart,
   Plus,
   Minus,
+  Camera,
+  Upload
 } from 'lucide-react';
 import { formatFCFA, buildProductWhatsAppUrl } from '../utils/whatsapp';
+import { fileToBase64 } from '../utils/imageUpload';
 
 interface ProductModalProps {
   product: Product | null;
@@ -22,6 +25,7 @@ interface ProductModalProps {
   isFavorite?: boolean;
   onToggleFavorite?: (id: string) => void;
   customPhone?: string;
+  onUpdateProductImage?: (productId: string, newImage: string) => void;
 }
 
 export const ProductModal: React.FC<ProductModalProps> = ({
@@ -31,12 +35,23 @@ export const ProductModal: React.FC<ProductModalProps> = ({
   isFavorite = false,
   onToggleFavorite,
   customPhone,
+  onUpdateProductImage,
 }) => {
   if (!isOpen || !product) return null;
 
   const [activeImageIndex, setActiveImageIndex] = useState(0);
-  const [selectedColor, setSelectedColor] = useState(product.colors[0] || { name: 'Défaut', hex: '#FF6E14' });
+  const [selectedColor, setSelectedColor] = useState(
+    product.colors && product.colors.length > 0
+      ? product.colors[0]
+      : { name: 'Défaut', hex: '#FF6E14' }
+  );
   const [quantity, setQuantity] = useState(1);
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const imagesList = product.images || [];
+  const hasImages = imagesList.length > 0;
+  const currentImage = hasImages ? imagesList[activeImageIndex] || imagesList[0] : null;
 
   const discountPercentage = product.oldPrice
     ? Math.round(((product.oldPrice - product.price) / product.oldPrice) * 100)
@@ -46,17 +61,37 @@ export const ProductModal: React.FC<ProductModalProps> = ({
 
   const handleColorSelect = (color: typeof product.colors[0]) => {
     setSelectedColor(color);
-    if (color.imageIndex !== undefined && product.images[color.imageIndex]) {
+    if (color.imageIndex !== undefined && imagesList[color.imageIndex]) {
       setActiveImageIndex(color.imageIndex);
     }
   };
 
   const nextImage = () => {
-    setActiveImageIndex((prev) => (prev + 1) % product.images.length);
+    if (imagesList.length === 0) return;
+    setActiveImageIndex((prev) => (prev + 1) % imagesList.length);
   };
 
   const prevImage = () => {
-    setActiveImageIndex((prev) => (prev - 1 + product.images.length) % product.images.length);
+    if (imagesList.length === 0) return;
+    setActiveImageIndex((prev) => (prev - 1 + imagesList.length) % imagesList.length);
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setIsUploading(true);
+      const base64 = await fileToBase64(file);
+      if (onUpdateProductImage) {
+        onUpdateProductImage(product.id, base64);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
   };
 
   const handleWhatsAppOrder = () => {
@@ -75,6 +110,14 @@ export const ProductModal: React.FC<ProductModalProps> = ({
       className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4 bg-[#18261F]/60 backdrop-blur-xs animate-in fade-in duration-200"
       onClick={onClose}
     >
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        onChange={handleFileUpload}
+        className="hidden"
+      />
+
       <div
         id="product-modal-card"
         className="bg-white rounded-t-3xl sm:rounded-3xl border-t-2 sm:border border-[#C85A17] sm:border-[#E8E1D7] shadow-2xl w-full max-w-4xl max-h-[92vh] sm:max-h-[90vh] overflow-y-auto relative animate-in slide-in-from-bottom-6 sm:zoom-in-95 duration-200 text-[#18261F] flex flex-col"
@@ -96,17 +139,53 @@ export const ProductModal: React.FC<ProductModalProps> = ({
         </button>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-8 p-4 sm:p-8 pb-28 sm:pb-8 flex-1">
-          {/* Left Column: Image Gallery Slider */}
+          {/* Left Column: Image Gallery Slider / Upload Placeholder */}
           <div className="flex flex-col gap-3">
-            <div className="relative aspect-square rounded-2xl overflow-hidden bg-[#FAF8F5] border border-[#E8E1D7] shadow-inner">
-              <img
-                src={product.images[activeImageIndex] || product.images[0]}
-                alt={`${product.name} - Vue ${activeImageIndex + 1}`}
-                className="w-full h-full object-cover object-center"
-              />
+            <div className="relative aspect-square rounded-2xl overflow-hidden bg-[#FAF8F5] border border-[#E8E1D7] shadow-inner flex items-center justify-center">
+              {currentImage ? (
+                <>
+                  <img
+                    src={currentImage}
+                    alt={`${product.name} - Vue ${activeImageIndex + 1}`}
+                    className="w-full h-full object-cover object-center"
+                  />
+
+                  {/* Change photo button on hover */}
+                  <button
+                    onClick={() => fileInputRef.current?.click()}
+                    className="absolute top-3 right-3 z-20 px-2.5 py-1 rounded-full bg-black/70 hover:bg-black text-white text-[10px] font-bold backdrop-blur-md flex items-center gap-1 transition-all shadow-md cursor-pointer"
+                  >
+                    <Camera className="w-3 h-3 text-[#F4A261]" />
+                    <span>Changer la photo</span>
+                  </button>
+                </>
+              ) : (
+                /* Empty Upload Zone */
+                <div
+                  onClick={() => fileInputRef.current?.click()}
+                  className="w-full h-full p-6 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-[#FAF0E6]/50 transition-colors"
+                >
+                  <div className="w-16 h-16 rounded-2xl bg-[#FAF0E6] border border-[#E8D4C0] flex items-center justify-center text-[#C85A17] mb-3">
+                    {isUploading ? (
+                      <div className="w-6 h-6 border-2 border-[#C85A17] border-t-transparent rounded-full animate-spin" />
+                    ) : (
+                      <Camera className="w-8 h-8" />
+                    )}
+                  </div>
+                  <span className="text-sm font-bold text-[#18261F]">Ajouter une photo pour ce modèle</span>
+                  <span className="text-xs text-[#4A5850] mt-1">Cliquez pour importer depuis votre appareil</span>
+                  <button
+                    type="button"
+                    className="mt-3 px-4 py-1.5 rounded-full bg-[#C85A17] text-white text-xs font-bold shadow-xs flex items-center gap-1"
+                  >
+                    <Upload className="w-3.5 h-3.5" />
+                    <span>Importer photo</span>
+                  </button>
+                </div>
+              )}
 
               {/* Badges */}
-              <div className="absolute top-3 left-3 flex flex-col gap-1.5 z-10">
+              <div className="absolute top-3 left-3 flex flex-col gap-1.5 z-10 pointer-events-none">
                 {product.badge && (
                   <span className="text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-md bg-[#C85A17] text-white shadow-xs border border-white/30">
                     {product.badge}
@@ -120,7 +199,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({
               </div>
 
               {/* Slider Arrows if multiple images */}
-              {product.images.length > 1 && (
+              {imagesList.length > 1 && (
                 <>
                   <button
                     onClick={prevImage}
@@ -138,26 +217,12 @@ export const ProductModal: React.FC<ProductModalProps> = ({
                   </button>
                 </>
               )}
-
-              {/* Mobile swipe indicator dots */}
-              {product.images.length > 1 && (
-                <div className="absolute bottom-2.5 left-1/2 -translate-x-1/2 flex items-center gap-1.5 bg-black/40 px-3 py-1 rounded-full backdrop-blur-xs">
-                  {product.images.map((_, i) => (
-                    <span
-                      key={i}
-                      className={`h-2 rounded-full transition-all ${
-                        activeImageIndex === i ? 'w-5 bg-[#C85A17]' : 'w-2 bg-white/70'
-                      }`}
-                    />
-                  ))}
-                </div>
-              )}
             </div>
 
             {/* Thumbnail selector */}
-            {product.images.length > 1 && (
+            {imagesList.length > 1 && (
               <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
-                {product.images.map((img, idx) => (
+                {imagesList.map((img, idx) => (
                   <button
                     key={idx}
                     onClick={() => setActiveImageIndex(idx)}
@@ -302,7 +367,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({
           </div>
         </div>
 
-        {/* Sticky Bottom Order Bar (Optimized for Mobile Thumb & Instant Conversion) */}
+        {/* Sticky Bottom Order Bar */}
         <div className="sticky bottom-0 left-0 right-0 z-30 bg-white/98 backdrop-blur-md border-t border-[#E8E1D7] p-3 sm:p-5 shadow-[0_-4px_20px_rgba(0,0,0,0.06)] flex flex-col gap-2">
           <div className="flex items-center justify-between sm:hidden px-1">
             <span className="text-xs text-[#4A5850] font-medium">

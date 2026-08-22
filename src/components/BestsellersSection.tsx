@@ -1,12 +1,13 @@
 import React from 'react';
 import { Product } from '../types';
-import { MessageCircle, ArrowRight, Star, Sparkles, ShieldCheck } from 'lucide-react';
+import { MessageCircle, ArrowRight, Star, Sparkles, ShieldCheck, Camera } from 'lucide-react';
 import { formatFCFA, buildProductWhatsAppUrl } from '../utils/whatsapp';
 
 interface BestsellersSectionProps {
   products: Product[];
   onOpenQuickView: (product: Product) => void;
   customPhone?: string;
+  onUpdateProductImage?: (productId: string, newImage: string) => void;
 }
 
 export const BestsellersSection: React.FC<BestsellersSectionProps> = ({
@@ -40,7 +41,7 @@ export const BestsellersSection: React.FC<BestsellersSectionProps> = ({
 
           <a
             href="#collection"
-            className="inline-flex items-center gap-2 text-xs sm:text-sm font-bold text-[#18261F] bg-[#FAF8F5] hover:bg-white px-4 py-2.5 rounded-full shadow-xs transition-all group"
+            className="inline-flex items-center gap-2 text-xs sm:text-sm font-bold text-[#18261F] bg-[#FAF8F5] hover:bg-white px-4 py-2.5 rounded-full shadow-xs transition-all group cursor-pointer"
           >
             <span>Voir toute la collection</span>
             <ArrowRight className="w-4 h-4 transform group-hover:translate-x-1 transition-transform" />
@@ -49,71 +50,84 @@ export const BestsellersSection: React.FC<BestsellersSectionProps> = ({
 
         {/* 3 Featured Large Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
-          {bestsellers.map((item, index) => (
-            <div
-              key={item.id}
-              className="group bg-white rounded-3xl border border-white/20 shadow-xl hover:shadow-2xl transition-all duration-300 overflow-hidden flex flex-col justify-between"
-            >
-              {/* Photo Stage */}
+          {bestsellers.map((item, index) => {
+            const hasImage = item.images && item.images.length > 0;
+            return (
               <div
-                className="relative aspect-4/3 w-full overflow-hidden cursor-pointer bg-[#FAF8F5]"
-                onClick={() => onOpenQuickView(item)}
+                key={item.id}
+                className="group bg-white rounded-3xl border border-white/20 shadow-xl hover:shadow-2xl transition-all duration-300 overflow-hidden flex flex-col justify-between"
               >
-                <img
-                  src={item.images[0]}
-                  alt={item.name}
-                  referrerPolicy="no-referrer"
-                  className="w-full h-full object-cover object-center group-hover:scale-108 transition-transform duration-500"
-                />
-
-                {/* Top Badge */}
-                <div className="absolute top-3 left-3 bg-[#C85A17] text-white text-xs font-bold px-3.5 py-1 rounded-full shadow-xs border border-white/30">
-                  N° {index + 1} Best-Seller
-                </div>
-
-                {/* Rating Badge */}
-                <div className="absolute bottom-3 left-3 flex items-center gap-1.5 bg-[#FAF8F5]/95 backdrop-blur-sm px-3 py-1 rounded-full text-xs text-[#18261F] shadow-xs border border-[#E8E1D7]">
-                  <span className="text-[#D97706] font-bold">★</span>
-                  <span className="font-bold">{item.rating}</span>
-                  <span className="text-[#4A5850] text-[10px] font-medium">({item.reviewCount} avis)</span>
-                </div>
-              </div>
-
-              {/* Details & Action */}
-              <div className="p-6 flex flex-col flex-1 justify-between bg-white text-[#18261F]">
-                <div>
-                  <h3
-                    onClick={() => onOpenQuickView(item)}
-                    className="font-serif text-xl font-bold text-[#18261F] group-hover:text-[#C85A17] transition-colors cursor-pointer"
-                  >
-                    {item.name}
-                  </h3>
-                  <p className="text-xs text-[#4A5850] mt-1 mb-4 line-clamp-2 font-normal">
-                    {item.description}
-                  </p>
-                </div>
-
-                <div className="pt-4 border-t border-[#EAE4DB] flex items-center justify-between gap-3">
-                  <div>
-                    <div className="text-xs text-[#4A5850]/70 font-bold uppercase tracking-wider">Prix</div>
-                    <div className="text-lg sm:text-xl font-bold text-[#C85A17]">
-                      {formatFCFA(item.price)}
+                {/* Photo Stage */}
+                <div
+                  className="relative aspect-4/3 w-full overflow-hidden cursor-pointer bg-[#FAF8F5] flex items-center justify-center"
+                  onClick={() => onOpenQuickView(item)}
+                >
+                  {hasImage ? (
+                    <img
+                      src={item.images[0]}
+                      alt={item.name}
+                      referrerPolicy="no-referrer"
+                      className="w-full h-full object-cover object-center group-hover:scale-108 transition-transform duration-500"
+                    />
+                  ) : (
+                    <div className="flex flex-col items-center justify-center p-6 text-center text-[#4A5850]">
+                      <div className="w-12 h-12 rounded-full bg-[#FAF0E6] flex items-center justify-center text-[#C85A17] mb-2">
+                        <Camera className="w-6 h-6" />
+                      </div>
+                      <span className="text-xs font-bold text-[#18261F]">Photo à ajouter</span>
+                      <span className="text-[10px] text-[#4A5850]/70">Cliquez pour voir la fiche</span>
                     </div>
+                  )}
+
+                  {/* Top Badge */}
+                  <div className="absolute top-3 left-3 bg-[#C85A17] text-white text-xs font-bold px-3.5 py-1 rounded-full shadow-xs border border-white/30">
+                    N° {index + 1} Best-Seller
                   </div>
 
-                  <a
-                    href={buildProductWhatsAppUrl({ product: item, customPhone })}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-2 bg-[#1E6B48] hover:bg-[#185539] text-white font-bold text-xs sm:text-sm py-2.5 px-4 rounded-xl shadow-xs transition-all hover:scale-105 active:scale-95 whitespace-nowrap border border-white/15"
-                  >
-                    <MessageCircle className="w-4 h-4 fill-white shrink-0" />
-                    <span>Commander</span>
-                  </a>
+                  {/* Rating Badge */}
+                  <div className="absolute bottom-3 left-3 flex items-center gap-1.5 bg-[#FAF8F5]/95 backdrop-blur-sm px-3 py-1 rounded-full text-xs text-[#18261F] shadow-xs border border-[#E8E1D7]">
+                    <span className="text-[#D97706] font-bold">★</span>
+                    <span className="font-bold">{item.rating}</span>
+                    <span className="text-[#4A5850] text-[10px] font-medium">({item.reviewCount} avis)</span>
+                  </div>
+                </div>
+
+                {/* Details & Action */}
+                <div className="p-6 flex flex-col flex-1 justify-between bg-white text-[#18261F]">
+                  <div>
+                    <h3
+                      onClick={() => onOpenQuickView(item)}
+                      className="font-serif text-xl font-bold text-[#18261F] group-hover:text-[#C85A17] transition-colors cursor-pointer"
+                    >
+                      {item.name}
+                    </h3>
+                    <p className="text-xs text-[#4A5850] mt-1 mb-4 line-clamp-2 font-normal">
+                      {item.description}
+                    </p>
+                  </div>
+
+                  <div className="pt-4 border-t border-[#EAE4DB] flex items-center justify-between gap-3">
+                    <div>
+                      <div className="text-xs text-[#4A5850]/70 font-bold uppercase tracking-wider">Prix</div>
+                      <div className="text-lg sm:text-xl font-bold text-[#C85A17]">
+                        {formatFCFA(item.price)}
+                      </div>
+                    </div>
+
+                    <a
+                      href={buildProductWhatsAppUrl({ product: item, customPhone })}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 bg-[#1E6B48] hover:bg-[#185539] text-white font-bold text-xs sm:text-sm py-2.5 px-4 rounded-xl shadow-xs transition-all hover:scale-105 active:scale-95 whitespace-nowrap border border-white/15"
+                    >
+                      <MessageCircle className="w-4 h-4 fill-white shrink-0" />
+                      <span>Commander</span>
+                    </a>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </section>

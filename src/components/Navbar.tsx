@@ -10,6 +10,7 @@ interface NavbarProps {
   storeConfig?: StoreConfig;
   customPhone?: string;
   promos?: PromoBannerItem[];
+  onOpenAdmin?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -17,6 +18,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   storeConfig = STORE_CONFIG,
   customPhone,
   promos = DEFAULT_PROMOS,
+  onOpenAdmin,
 }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -131,6 +133,17 @@ export const Navbar: React.FC<NavbarProps> = ({
 
         {/* Right CTA Actions */}
         <div className="flex items-center gap-1.5 sm:gap-2.5">
+          {onOpenAdmin && (
+            <button
+              onClick={onOpenAdmin}
+              className="flex items-center gap-1 bg-[#FAF0E6] hover:bg-[#F3E2CF] text-[#B85318] font-bold text-xs sm:text-sm py-1.5 sm:py-2 px-2.5 sm:px-3 rounded-xl border border-[#E8D4C0] transition-all cursor-pointer shadow-2xs hover:scale-105 active:scale-95"
+              title="Gérer les photos de la boutique"
+            >
+              <span className="text-sm">📸</span>
+              <span className="hidden sm:inline">Mes Photos</span>
+            </button>
+          )}
+
           {/* Desktop & Mobile WhatsApp CTA */}
           <a
             id="nav-whatsapp-cta"
