@@ -23,16 +23,17 @@ import { addPhotoToMediaLibrary, syncAllPhotosToMediaLibrary, saveStoredMediaLib
 import { fetchServerSyncData, pushServerSyncData } from './utils/syncApi';
 
 export default function App() {
-  // 1. Dynamic Products State with localStorage persistence (v3 catalog - user custom images)
+  // 1. Dynamic Products State with localStorage persistence (v4 catalog - authentic luxury images)
   const [products, setProducts] = useState<Product[]>(() => {
     try {
-      const saved = localStorage.getItem('aura_products_v3');
+      const saved = localStorage.getItem('aura_products_v4') || localStorage.getItem('aura_products_v3');
       if (saved) {
         const parsed = JSON.parse(saved);
-        // If parsed is non-empty array with images, use it, otherwise merge with curated PRODUCTS
         if (Array.isArray(parsed) && parsed.length > 0) {
           return parsed.map((p) => {
-            if (!p.images || p.images.length === 0) {
+            // If images are missing or contains old Unsplash stock placeholder, replace with curated luxury asset
+            const hasUnsplash = p.images?.some((img: string) => typeof img === 'string' && img.includes('images.unsplash.com'));
+            if (!p.images || p.images.length === 0 || hasUnsplash) {
               const defaultMatch = PRODUCTS.find((dp) => dp.id === p.id);
               if (defaultMatch && defaultMatch.images && defaultMatch.images.length > 0) {
                 return { ...p, images: defaultMatch.images };
@@ -81,8 +82,18 @@ export default function App() {
         const cloudData = await fetchServerSyncData();
         if (cloudData) {
           if (cloudData.products && Array.isArray(cloudData.products) && cloudData.products.length > 0) {
-            setProducts(cloudData.products);
-            localStorage.setItem('aura_products_v3', JSON.stringify(cloudData.products));
+            const sanitized = cloudData.products.map((p) => {
+              const hasUnsplash = p.images?.some((img: string) => typeof img === 'string' && img.includes('images.unsplash.com'));
+              if (!p.images || p.images.length === 0 || hasUnsplash) {
+                const defaultMatch = PRODUCTS.find((dp) => dp.id === p.id);
+                if (defaultMatch && defaultMatch.images && defaultMatch.images.length > 0) {
+                  return { ...p, images: defaultMatch.images };
+                }
+              }
+              return p;
+            });
+            setProducts(sanitized);
+            localStorage.setItem('aura_products_v4', JSON.stringify(sanitized));
           }
           if (cloudData.mediaLibrary && Array.isArray(cloudData.mediaLibrary)) {
             saveStoredMediaLibrary(cloudData.mediaLibrary);
@@ -169,7 +180,7 @@ export default function App() {
   const handleUpdateProducts = (newProducts: Product[]) => {
     setProducts(newProducts);
     try {
-      localStorage.setItem('aura_products_v3', JSON.stringify(newProducts));
+      localStorage.setItem('aura_products_v4', JSON.stringify(newProducts));
     } catch (err) {
       console.error(err);
     }

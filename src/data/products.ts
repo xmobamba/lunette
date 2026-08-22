@@ -1,5 +1,18 @@
 import { Product } from '../types';
 
+import imgChanelShield from '../assets/images/chanel_shield_black_1787218034317.jpg';
+import imgBvlgariAviator from '../assets/images/bvlgari_aviator_burgundy_1787242471047.jpg';
+import imgMiuMiuOval from '../assets/images/miumiu_oval_black_1787218119854.jpg';
+import imgCelineHavana from '../assets/images/celine_triomphe_havana_1787218062413.jpg';
+import imgBvlgariRimless from '../assets/images/bvlgari_rimless_black_1787218174732.jpg';
+import imgCelineBlack from '../assets/images/celine_triomphe_black_1787218159931.jpg';
+import imgLvPilot from '../assets/images/lv_pilot_cream_1787218102121.jpg';
+import imgBvlgariSerpenti from '../assets/images/bvlgari_serpenti_amber_1787218074048.jpg';
+import imgCartierOval from '../assets/images/cartier_cdecor_oval_1787218049335.jpg';
+import imgDiorEmerald from '../assets/images/dior_cd_emerald_1787218090618.jpg';
+import imgCelineOval from '../assets/images/celine_oval_tortoise_1787242486013.jpg';
+import imgFredCable from '../assets/images/fred_cable_gold_1787218135047.jpg';
+
 export const PRODUCTS: Product[] = [
   {
     id: 'chanel-shield-luxe',
@@ -11,10 +24,7 @@ export const PRODUCTS: Product[] = [
     longDescription: 'Inspirée de la haute couture parisienne, cette paire masque enveloppe le regard avec un magnétisme absolu. Livrée avec son coffret et son étui en cuir matelassé noir haute couture.',
     price: 35000,
     oldPrice: 45000,
-    images: [
-      'https://images.unsplash.com/photo-1511499767150-a48a237f0083?auto=format&fit=crop&w=800&q=80',
-      'https://images.unsplash.com/photo-1508296695146-257a814070b4?auto=format&fit=crop&w=800&q=80'
-    ],
+    images: [imgChanelShield],
     colors: [
       { name: 'Noir & Or CC', hex: '#0B0B0B', imageIndex: 0 },
     ],
@@ -41,10 +51,7 @@ export const PRODUCTS: Product[] = [
     longDescription: 'Le mariage sublime entre l’héritage joaillier de Rome et la modernité. Verres solaires dégradés vinyle bordeaux et branches or ciselées.',
     price: 35000,
     oldPrice: 48000,
-    images: [
-      'https://images.unsplash.com/photo-1572635196237-14b3f281503f?auto=format&fit=crop&w=800&q=80',
-      'https://images.unsplash.com/photo-1577803645773-f96470509666?auto=format&fit=crop&w=800&q=80'
-    ],
+    images: [imgBvlgariAviator],
     colors: [
       { name: 'Bordeaux Rubis & Or', hex: '#681B2B', imageIndex: 0 },
     ],
@@ -71,10 +78,7 @@ export const PRODUCTS: Product[] = [
     longDescription: 'Adorée des célébrités et influenceuses de mode. Cette monture ovale audacieuse structure le visage avec un chic rétro futuriste. Livrée avec sa pochette rose poudré Miu Miu.',
     price: 35000,
     oldPrice: 45000,
-    images: [
-      'https://images.unsplash.com/photo-1509695507497-903c140c43b0?auto=format&fit=crop&w=800&q=80',
-      'https://images.unsplash.com/photo-1574258495973-f010dfbb5371?auto=format&fit=crop&w=800&q=80'
-    ],
+    images: [imgMiuMiuOval],
     colors: [
       { name: 'Noir & Or Couture', hex: '#0A0A0A', imageIndex: 0 },
     ],
@@ -101,10 +105,7 @@ export const PRODUCTS: Product[] = [
     longDescription: 'La paire incontournable pour un style chic et affirmé à Abidjan. Les nuances chaudes de l’écaille associées aux finitions dorées apportent luminosité et caractère au visage.',
     price: 35000,
     oldPrice: 45000,
-    images: [
-      'https://images.unsplash.com/photo-1584030373081-f37b7bb4fa8e?auto=format&fit=crop&w=800&q=80',
-      'https://images.unsplash.com/photo-1511499767150-a48a237f0083?auto=format&fit=crop&w=800&q=80'
-    ],
+    images: [imgCelineHavana],
     colors: [
       { name: 'Écaille Havane & Or', hex: '#6E4720', imageIndex: 0 },
     ],
@@ -131,10 +132,7 @@ export const PRODUCTS: Product[] = [
     longDescription: 'La fusion parfaite entre discrétion sans contour et puissance des ornements joailliers. Idéale pour sublimer vos tenues de cocktail et sorties chic.',
     price: 35000,
     oldPrice: 45000,
-    images: [
-      'https://images.unsplash.com/photo-1473496169904-658ba7c44d8a?auto=format&fit=crop&w=800&q=80',
-      'https://images.unsplash.com/photo-1508296695146-257a814070b4?auto=format&fit=crop&w=800&q=80'
-    ],
+    images: [imgBvlgariRimless],
     colors: [
       { name: 'Noir Facetté & Or', hex: '#111111', imageIndex: 0 },
     ],
@@ -161,10 +159,7 @@ export const PRODUCTS: Product[] = [
     longDescription: 'Un classique moderne et intemporel. Les verres fumés noirs et l’éclat de l’acétate laqué offrent une protection maximale et un style irrésistible.',
     price: 35000,
     oldPrice: 45000,
-    images: [
-      'https://images.unsplash.com/photo-1508296695146-257a814070b4?auto=format&fit=crop&w=800&q=80',
-      'https://images.unsplash.com/photo-1511499767150-a48a237f0083?auto=format&fit=crop&w=800&q=80'
-    ],
+    images: [imgCelineBlack],
     colors: [
       { name: 'Noir Laqué & Or', hex: '#0B0B0B', imageIndex: 0 },
     ],
@@ -191,10 +186,7 @@ export const PRODUCTS: Product[] = [
     longDescription: 'Design puissant et finitions raffinées. Les tons nude chaleureux s’associent parfaitement aux tenues estivales et habillées d’Abidjan.',
     price: 35000,
     oldPrice: 47000,
-    images: [
-      'https://images.unsplash.com/photo-1572635196237-14b3f281503f?auto=format&fit=crop&w=800&q=80',
-      'https://images.unsplash.com/photo-1584030373081-f37b7bb4fa8e?auto=format&fit=crop&w=800&q=80'
-    ],
+    images: [imgLvPilot],
     colors: [
       { name: 'Nude Crème & Or', hex: '#D8C3A5', imageIndex: 0 },
     ],
@@ -221,10 +213,7 @@ export const PRODUCTS: Product[] = [
     longDescription: 'Les découpes festonnées sculptent la lumière autour du visage tandis que le dégradé thé rosé apporte une douceur incomparable.',
     price: 35000,
     oldPrice: 46000,
-    images: [
-      'https://images.unsplash.com/photo-1511499767150-a48a237f0083?auto=format&fit=crop&w=800&q=80',
-      'https://images.unsplash.com/photo-1574258495973-f010dfbb5371?auto=format&fit=crop&w=800&q=80'
-    ],
+    images: [imgBvlgariSerpenti],
     colors: [
       { name: 'Ambre Rosé & Or', hex: '#C6A15B', imageIndex: 0 },
     ],
@@ -251,10 +240,7 @@ export const PRODUCTS: Product[] = [
     longDescription: 'Un chef-d’œuvre d’élégance intemporelle. Les détails ciselés de la charnière en C doré et la légèreté des verres sans monture subliment chaque regard. Livrée avec étui rigide siglé Cartier.',
     price: 35000,
     oldPrice: 48000,
-    images: [
-      'https://images.unsplash.com/photo-1577803645773-f96470509666?auto=format&fit=crop&w=800&q=80',
-      'https://images.unsplash.com/photo-1572635196237-14b3f281503f?auto=format&fit=crop&w=800&q=80'
-    ],
+    images: [imgCartierOval],
     colors: [
       { name: 'Or & Verres Noirs', hex: '#C6A15B', imageIndex: 0 },
     ],
@@ -281,10 +267,7 @@ export const PRODUCTS: Product[] = [
     longDescription: 'Une teinte verte émeraude lumineuse et rafraîchissante qui apporte une touche couture instantanée. Branches dorées travaillées en maillons articulés.',
     price: 35000,
     oldPrice: 48000,
-    images: [
-      'https://images.unsplash.com/photo-1509695507497-903c140c43b0?auto=format&fit=crop&w=800&q=80',
-      'https://images.unsplash.com/photo-1473496169904-658ba7c44d8a?auto=format&fit=crop&w=800&q=80'
-    ],
+    images: [imgDiorEmerald],
     colors: [
       { name: 'Vert Émeraude & Or', hex: '#2E8B57', imageIndex: 0 },
     ],
@@ -311,10 +294,7 @@ export const PRODUCTS: Product[] = [
     longDescription: 'L’élégance parisienne par excellence. Les reflets chauds de l’écaille sublime et l’écusson doré Triomphe créent une présence magnétique.',
     price: 35000,
     oldPrice: 46000,
-    images: [
-      'https://images.unsplash.com/photo-1584030373081-f37b7bb4fa8e?auto=format&fit=crop&w=800&q=80',
-      'https://images.unsplash.com/photo-1509695507497-903c140c43b0?auto=format&fit=crop&w=800&q=80'
-    ],
+    images: [imgCelineOval],
     colors: [
       { name: 'Écaille Ambre & Or', hex: '#8B5A2B', imageIndex: 0 },
     ],
@@ -341,10 +321,7 @@ export const PRODUCTS: Product[] = [
     longDescription: 'Inspirée par l’univers marin de la Côte d’Azur, cette monture prestigieuse combine la pureté des verres sans cadre et la finesse du câble en or torsadé. Livrée avec étui rigide crème.',
     price: 35000,
     oldPrice: 48000,
-    images: [
-      'https://images.unsplash.com/photo-1572635196237-14b3f281503f?auto=format&fit=crop&w=800&q=80',
-      'https://images.unsplash.com/photo-1577803645773-f96470509666?auto=format&fit=crop&w=800&q=80'
-    ],
+    images: [imgFredCable],
     colors: [
       { name: 'Câble Or & Verres Clairs', hex: '#C6A15B', imageIndex: 0 },
     ],
