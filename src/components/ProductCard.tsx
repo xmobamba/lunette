@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { MessageCircle, Eye, Heart, Share2, Check, Flame, Sparkles } from 'lucide-react';
 import { Product } from '../types';
 import { formatFCFA, buildProductWhatsAppUrl } from '../utils/whatsapp';
+import imgFallback from '../assets/images/chanel_shield_black_1787218034317.jpg';
 
 interface ProductCardProps {
   product: Product;
@@ -11,7 +12,7 @@ interface ProductCardProps {
   customPhone?: string;
 }
 
-const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1511499767150-a48a237f0083?auto=format&fit=crop&w=800&q=80';
+const FALLBACK_IMAGE = imgFallback;
 
 export const ProductCard: React.FC<ProductCardProps> = ({
   product,

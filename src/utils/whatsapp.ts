@@ -96,6 +96,14 @@ Je souhaite découvrir vos modèles best-sellers du moment et passer commande. M
 }
 
 /**
+ * Génère un lien WhatsApp avec un message personnalisé direct
+ */
+export function buildDirectMessageWhatsAppUrl(customMessage: string, customPhone?: string): string {
+  const phone = getCleanPhoneNumber(customPhone);
+  return `https://wa.me/${phone}?text=${encodeURIComponent(customMessage)}`;
+}
+
+/**
  * Génère un lien WhatsApp pour une bannière promotionnelle spécifique
  */
 export function buildCustomPromoWhatsAppUrl(promo: PromoBannerItem, customPhone?: string): string {

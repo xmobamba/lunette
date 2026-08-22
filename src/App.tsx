@@ -154,20 +154,20 @@ export default function App() {
       />
 
       <main className="pb-24 sm:pb-0">
-        {/* 2. Hero Section */}
-        <Hero customPhone={storeConfig.phoneRaw} />
-
-        {/* 3. Instagram & TikTok Interactive Stories Reel (Lookbook, Tendances, Unboxing) */}
-        <SocialStories customPhone={storeConfig.phoneRaw} />
-
-        {/* 4. Next-Generation Promotional Banner Showcase (Immediately visible) */}
+        {/* 1.5 Header Level Compact Promo Banner with Glasses Fade & Rolling Info */}
         <PromoBanner
           promos={promos}
           storeConfig={storeConfig}
           customPhone={storeConfig.phoneRaw}
         />
 
-        {/* 5. Products Collection & Categories Grid */}
+        {/* 2. Hero Section */}
+        <Hero customPhone={storeConfig.phoneRaw} />
+
+        {/* 3. Instagram & TikTok Interactive Stories Reel (Lookbook, Tendances, Unboxing) */}
+        <SocialStories customPhone={storeConfig.phoneRaw} />
+
+        {/* 4. Products Collection & Categories Grid */}
         <ProductGrid
           products={products}
           onOpenQuickView={(p) => setSelectedProduct(p)}

@@ -16,6 +16,19 @@ import { STORE_CONFIG } from '../config/store';
 import { trackAnalyticsEvent } from '../utils/analytics';
 import { buildGeneralWhatsAppUrl } from '../utils/whatsapp';
 
+import imgChanelShield from '../assets/images/chanel_shield_black_1787218034317.jpg';
+import imgBvlgariAviator from '../assets/images/bvlgari_aviator_burgundy_1787242471047.jpg';
+import imgMiuMiuOval from '../assets/images/miumiu_oval_black_1787218119854.jpg';
+import imgCelineHavana from '../assets/images/celine_triomphe_havana_1787218062413.jpg';
+import imgBvlgariRimless from '../assets/images/bvlgari_rimless_black_1787218174732.jpg';
+import imgCelineBlack from '../assets/images/celine_triomphe_black_1787218159931.jpg';
+import imgLvPilot from '../assets/images/lv_pilot_cream_1787218102121.jpg';
+import imgBvlgariAmber from '../assets/images/bvlgari_serpenti_amber_1787218074048.jpg';
+import imgCartierOval from '../assets/images/cartier_cdecor_oval_1787218049335.jpg';
+import imgDiorEmerald from '../assets/images/dior_cd_emerald_1787218090618.jpg';
+import imgCelineOvalTortoise from '../assets/images/celine_oval_tortoise_1787242486013.jpg';
+import imgFredGold from '../assets/images/fred_cable_gold_1787218135047.jpg';
+
 interface SocialPostItem {
   id: string;
   type: 'image' | 'video';
@@ -35,81 +48,81 @@ const SOCIAL_POSTS: SocialPostItem[] = [
   {
     id: 'post-1',
     type: 'image',
-    image: 'https://images.unsplash.com/photo-1509695503492-4122d64f0b2f?auto=format&fit=crop&w=700&q=80',
-    likes: 542,
-    commentsCount: 38,
-    caption: 'Golden hour à Assinie avec le modèle Riviera Gold ✨ Verres polarisés UV400.',
-    productName: 'Riviera Gold',
+    image: imgChanelShield,
+    likes: 842,
+    commentsCount: 58,
+    caption: 'Chanel Masque Shield CC • Le chic haute couture parisien sous le soleil d’Abidjan ✨ Livrée avec son étui matelassé.',
+    productName: 'Chanel Shield CC',
     productPrice: '35 000 FCFA',
-    location: 'Assinie Beach Club',
-    tag: 'Lookbook Assinie',
+    location: 'Cocody Ambassades',
+    tag: 'Look Bestseller',
     instagramUrl: 'https://instagram.com',
   },
   {
     id: 'post-2',
     type: 'video',
-    image: 'https://images.unsplash.com/photo-1511499767150-a48a237f0083?auto=format&fit=crop&w=700&q=80',
-    likes: 890,
-    commentsCount: 64,
-    views: '18.4K',
-    caption: 'La paire intemporelle préférée de nos clientes de Cocody & Marcory 🕶️',
-    productName: 'Luna Black',
+    image: imgBvlgariAviator,
+    likes: 990,
+    commentsCount: 84,
+    views: '28.4K',
+    caption: 'Double pont en or & verres bordeaux dégradés Bvlgari Aviateur 🕶️ Une allure royale.',
+    productName: 'Bvlgari Aviateur',
     productPrice: '35 000 FCFA',
-    location: 'Cocody Riviera Golf',
+    location: 'Sofitel Abidjan Ivoire',
     tag: 'Reel Tendance',
     instagramUrl: 'https://instagram.com',
   },
   {
     id: 'post-3',
     type: 'image',
-    image: 'https://images.unsplash.com/photo-1508296695146-257a814070b4?auto=format&fit=crop&w=700&q=80',
-    likes: 612,
-    commentsCount: 42,
-    caption: 'Détails haute couture & finition soignée. Modèle Saint-Tropez Square au Plateau.',
-    productName: 'Saint-Tropez Square',
+    image: imgMiuMiuOval,
+    likes: 912,
+    commentsCount: 62,
+    caption: 'Le modèle viral Miu Miu Ovale Couture noire avec sa pochette rose poudré signature 💕',
+    productName: 'Miu Miu Ovale',
     productPrice: '35 000 FCFA',
-    location: 'Plateau Business Hub',
-    tag: 'Look Chic',
+    location: 'Marcory Zone 4',
+    tag: 'Look Couture',
     instagramUrl: 'https://instagram.com',
   },
   {
     id: 'post-4',
     type: 'video',
-    image: 'https://images.unsplash.com/photo-1577803645773-f96470509666?auto=format&fit=crop&w=700&q=80',
-    likes: 730,
-    commentsCount: 51,
-    views: '24.1K',
-    caption: 'Unboxing de notre coffret 2 paires avec étuis rigides de luxe offerts 🎁',
-    productName: 'Pack Duo Prestige',
-    productPrice: '60 000 FCFA',
-    location: 'Abidjan Officiel',
+    image: imgCelineHavana,
+    likes: 830,
+    commentsCount: 61,
+    views: '34.1K',
+    caption: 'Unboxing Céline Triomphe Écaille avec boîte rigide de protection offerte 🎁',
+    productName: 'Céline Triomphe',
+    productPrice: '35 000 FCFA',
+    location: 'Deux Plateaux Vallon',
     tag: 'Unboxing Abidjan',
     instagramUrl: 'https://instagram.com',
   },
   {
     id: 'post-5',
     type: 'image',
-    image: 'https://images.unsplash.com/photo-1572635196237-14b3f281503f?auto=format&fit=crop&w=700&q=80',
-    likes: 418,
-    commentsCount: 29,
-    caption: 'La Velvet Cat-Eye pour un regard affirmé et irrésistible au Sofitel Ivoire ❤️',
-    productName: 'Velvet Cat-Eye',
+    image: imgCartierOval,
+    likes: 878,
+    commentsCount: 49,
+    caption: 'Cartier C-Décor Ovale • Pureté des verres sans monture et charnières C en or 24K 💎',
+    productName: 'Cartier C Décor',
     productPrice: '35 000 FCFA',
-    location: 'Sofitel Abidjan',
-    tag: 'Soirée VIP',
+    location: 'Plateau Prestige',
+    tag: 'Look Joaillerie',
     instagramUrl: 'https://instagram.com',
   },
   {
     id: 'post-6',
     type: 'video',
-    image: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=700&q=80',
-    likes: 924,
-    commentsCount: 77,
-    views: '31.2K',
-    caption: 'Livraison express reçue en moins de 24h à Marcory Zone 4 ! 🚚✨',
-    productName: 'Aviateur Prestige',
+    image: imgFredGold,
+    likes: 944,
+    commentsCount: 79,
+    views: '39.2K',
+    caption: 'Fred Force 10 Câble Or • Livraison 24h & Paiement à la réception à Abidjan 🚚✨',
+    productName: 'Fred Force 10 Câble',
     productPrice: '35 000 FCFA',
-    location: 'Marcory Zone 4',
+    location: 'Riviera Golf',
     tag: 'Livraison 24h',
     instagramUrl: 'https://instagram.com',
   },
@@ -140,7 +153,7 @@ export const InstagramFeed: React.FC = () => {
               <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full p-[3px] bg-gradient-to-tr from-[#C85A17] via-[#F4A261] to-[#1E6B48] shadow-md">
                 <div className="w-full h-full rounded-full p-[2px] bg-white overflow-hidden">
                   <img
-                    src="https://images.unsplash.com/photo-1511499767150-a48a237f0083?auto=format&fit=crop&w=300&q=80"
+                    src={imgChanelShield}
                     alt="L'AURA Eyewear Abidjan"
                     className="w-full h-full object-cover"
                   />

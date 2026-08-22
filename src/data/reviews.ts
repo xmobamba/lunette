@@ -8,7 +8,7 @@ export const TESTIMONIALS: Testimonial[] = [
     rating: 5,
     comment: 'Les lunettes sont encore plus belles en vrai. La monture est solide, les verres protègent vraiment bien du soleil et la livraison à Cocody a pris moins de 24h. Vendeuse très disponible sur WhatsApp !',
     verified: true,
-    productBought: 'Luna Black',
+    productBought: 'Chanel Masque Shield CC',
     avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80',
   },
   {
@@ -18,7 +18,7 @@ export const TESTIMONIALS: Testimonial[] = [
     rating: 5,
     comment: 'J’ai commandé directement sur WhatsApp en 30 secondes et j’ai reçu ma paire le lendemain midi. Le boîtier et la lingette sont magnifiques. Très satisfaite de mon achat !',
     verified: true,
-    productBought: 'Riviera Gold',
+    productBought: 'Bvlgari Aviateur Bordeaux',
     avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=200&q=80',
   },
   {
@@ -26,9 +26,9 @@ export const TESTIMONIALS: Testimonial[] = [
     name: 'Cynthia M.',
     location: 'Deux Plateaux Vallon, Abidjan',
     rating: 5,
-    comment: 'Très belles lunettes et super qualité ! J’ai profité de l’offre 2 paires achetées pour prendre la Saint-Tropez et la Velvet Cat-Eye. Livraison gratuite reçue à l’heure. Je recommande à 100%.',
+    comment: 'Très belles lunettes et super qualité ! J’ai profité de l’offre 2 paires achetées pour prendre la Céline Triomphe et la Miu Miu Ovale. Livraison gratuite reçue à l’heure. Je recommande à 100%.',
     verified: true,
-    productBought: 'Saint-Tropez Square + Velvet Cat-Eye',
+    productBought: 'Céline Triomphe + Miu Miu Ovale',
     avatar: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=200&q=80',
   },
   {
@@ -36,9 +36,9 @@ export const TESTIMONIALS: Testimonial[] = [
     name: 'Jean-Yves B.',
     location: 'Plateau, Abidjan',
     rating: 5,
-    comment: 'Modèle Aviateur Prestige au top pour conduire à Abidjan sans être ébloui. Les verres polarisés font toute la différence. Paiement Wave simple et rapide.',
+    comment: 'Modèle Cartier C Décor au top pour conduire à Abidjan sans être ébloui. Les finitions or 24K font toute la différence. Paiement Wave simple et rapide.',
     verified: true,
-    productBought: 'Aviateur Prestige',
+    productBought: 'Cartier C Décor Ovale Prestige',
     avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80',
   },
 ];

@@ -10,9 +10,26 @@ import {
   Heart, 
   Flame, 
   ShoppingBag,
-  Eye
+  Eye,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 import { buildGeneralWhatsAppUrl } from '../utils/whatsapp';
+
+import imgChanelShield from '../assets/images/chanel_shield_black_1787218034317.jpg';
+import imgBvlgariAviator from '../assets/images/bvlgari_aviator_burgundy_1787242471047.jpg';
+import imgMiuMiuOval from '../assets/images/miumiu_oval_black_1787218119854.jpg';
+import imgCelineHavana from '../assets/images/celine_triomphe_havana_1787218062413.jpg';
+import imgCartierOval from '../assets/images/cartier_cdecor_oval_1787218049335.jpg';
+import imgDiorEmerald from '../assets/images/dior_cd_emerald_1787218090618.jpg';
+
+const HERO_FEATURED_MODELS = [
+  { image: imgChanelShield, name: 'Chanel Masque Shield CC', tag: 'Bestseller 2026', price: '35 000 F' },
+  { image: imgBvlgariAviator, name: 'Bvlgari Aviateur Bordeaux', tag: 'Collection Joaillerie', price: '35 000 F' },
+  { image: imgMiuMiuOval, name: 'Miu Miu Ovale Couture', tag: 'Tendance Paris', price: '35 000 F' },
+  { image: imgCartierOval, name: 'Cartier C Décor Prestige', tag: 'Édition Or 24K', price: '35 000 F' },
+  { image: imgDiorEmerald, name: 'Dior CD Aviateur Émeraude', tag: 'Haute Couture', price: '35 000 F' },
+];
 
 interface HeroProps {
   customPhone?: string;
@@ -20,6 +37,8 @@ interface HeroProps {
 
 export const Hero: React.FC<HeroProps> = ({ customPhone }) => {
   const [liveViewers, setLiveViewers] = useState(19);
+
+  const [heroModelIndex, setHeroModelIndex] = useState(0);
 
   // Subtle live viewer simulation for social buzz
   useEffect(() => {
@@ -33,8 +52,18 @@ export const Hero: React.FC<HeroProps> = ({ customPhone }) => {
     return () => clearInterval(interval);
   }, []);
 
+  // Auto rotate hero models
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setHeroModelIndex((prev) => (prev + 1) % HERO_FEATURED_MODELS.length);
+    }, 5000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const currentHeroModel = HERO_FEATURED_MODELS[heroModelIndex];
+
   return (
-    <section id="top" className="relative min-h-[82vh] lg:min-h-[90vh] bg-gradient-to-b from-[#F7F3EC] via-[#FAF8F5] to-[#F3EFEA] text-[#18261F] flex items-center pt-24 sm:pt-28 pb-12 sm:pb-16 overflow-hidden">
+    <section id="top" className="relative min-h-[75vh] lg:min-h-[82vh] bg-gradient-to-b from-[#F7F3EC] via-[#FAF8F5] to-[#F3EFEA] text-[#18261F] flex items-center pt-6 sm:pt-10 pb-12 sm:pb-16 overflow-hidden">
       {/* Background Soft Ambient Luxury Glow */}
       <div className="absolute top-1/4 left-1/4 -translate-x-1/2 -translate-y-1/2 w-[400px] sm:w-[500px] h-[400px] sm:h-[500px] bg-[#E8C5A8]/25 rounded-full blur-[140px] pointer-events-none"></div>
       <div className="absolute bottom-10 right-10 w-[350px] sm:w-[450px] h-[350px] sm:h-[450px] bg-[#C8DEC5]/25 rounded-full blur-[130px] pointer-events-none"></div>
@@ -139,15 +168,15 @@ export const Hero: React.FC<HeroProps> = ({ customPhone }) => {
           <div className="lg:col-span-5 relative mt-2 lg:mt-0">
             <div className="relative mx-auto max-w-md lg:max-w-none">
               {/* Outer decorative glow */}
-              <div className="absolute -inset-2 rounded-3xl bg-gradient-to-tr from-[#E8C5A8]/40 via-white/50 to-[#C8DEC5]/40 blur-md"></div>
+              <div className="absolute -inset-2 rounded-3xl bg-gradient-to-tr from-[#E8C5A8]/40 via-white/50 to-[#C8DEC5]/40 blur-md pointer-events-none"></div>
 
               {/* Image Card */}
               <div className="relative rounded-3xl overflow-hidden border border-[#E8E1D7] shadow-xl bg-white group">
                 <img
-                  src="https://images.unsplash.com/photo-1511499767150-a48a237f0083?auto=format&fit=crop&w=1000&q=80"
-                  alt="Lunettes de soleil tendance AURA Eyewear Abidjan"
+                  src={currentHeroModel.image}
+                  alt={currentHeroModel.name}
                   referrerPolicy="no-referrer"
-                  className="w-full h-[340px] sm:h-[480px] object-cover object-center transform group-hover:scale-104 transition-transform duration-700"
+                  className="w-full h-[360px] sm:h-[480px] object-cover object-center transform group-hover:scale-104 transition-all duration-700"
                   loading="eager"
                 />
 
@@ -157,54 +186,64 @@ export const Hero: React.FC<HeroProps> = ({ customPhone }) => {
                   <span>100% Protection UV400</span>
                 </div>
 
+                {/* Model tag top left */}
+                <div className="absolute top-3 left-3 bg-[#18261F]/90 backdrop-blur-md border border-white/20 px-3 py-1 rounded-full flex items-center gap-1.5 text-[10px] text-[#F4A261] font-bold shadow-2xs">
+                  <Sparkles className="w-3 h-3" />
+                  <span>{currentHeroModel.tag}</span>
+                </div>
+
                 {/* Social Lookbook Hotspot Tag over sunglasses */}
-                <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20">
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20">
                   <a
                     href="#collection"
-                    className="inline-flex items-center gap-2 bg-[#18261F]/90 hover:bg-[#18261F] text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-xl border border-white/30 backdrop-blur-md transition-all hover:scale-105"
+                    className="inline-flex items-center gap-2 bg-[#18261F]/90 hover:bg-[#18261F] text-white px-3.5 py-2 rounded-full text-xs font-bold shadow-xl border border-white/30 backdrop-blur-md transition-all hover:scale-105"
                   >
                     <span className="w-2 h-2 rounded-full bg-[#C85A17] animate-ping"></span>
-                    <span>Modèle Luna Black • 35 000 F</span>
+                    <span>{currentHeroModel.name} • {currentHeroModel.price}</span>
                     <ShoppingBag className="w-3.5 h-3.5 text-[#F4A261]" />
                   </a>
+                </div>
+
+                {/* Mini Navigation Controls */}
+                <div className="absolute top-1/2 -translate-y-1/2 inset-x-2 flex justify-between pointer-events-none z-20">
+                  <button
+                    onClick={() => setHeroModelIndex((prev) => (prev - 1 + HERO_FEATURED_MODELS.length) % HERO_FEATURED_MODELS.length)}
+                    className="w-8 h-8 rounded-full bg-black/45 hover:bg-black/75 text-white flex items-center justify-center backdrop-blur-xs transition-all pointer-events-auto cursor-pointer"
+                    aria-label="Modèle précédent"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => setHeroModelIndex((prev) => (prev + 1) % HERO_FEATURED_MODELS.length)}
+                    className="w-8 h-8 rounded-full bg-black/45 hover:bg-black/75 text-white flex items-center justify-center backdrop-blur-xs transition-all pointer-events-auto cursor-pointer"
+                    aria-label="Modèle suivant"
+                  >
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
                 </div>
 
                 {/* Bottom Social Proof User Card */}
                 <div className="absolute bottom-3 left-3 right-3 bg-[#18261F]/90 backdrop-blur-md text-white p-3 sm:p-3.5 rounded-2xl border border-white/15 flex items-center justify-between shadow-xl">
                   <div className="flex items-center gap-2.5">
-                    <div className="flex -space-x-1.5">
-                      <img
-                        className="w-7 h-7 rounded-full border border-white/60 object-cover"
-                        src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80"
-                        alt="Avis cliente"
-                      />
-                      <img
-                        className="w-7 h-7 rounded-full border border-white/60 object-cover"
-                        src="https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=100&q=80"
-                        alt="Avis cliente"
-                      />
-                      <img
-                        className="w-7 h-7 rounded-full border border-white/60 object-cover"
-                        src="https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=100&q=80"
-                        alt="Avis cliente"
-                      />
+                    <div className="w-8 h-8 rounded-full bg-[#C85A17]/30 border border-[#C85A17] flex items-center justify-center text-[#F4A261] font-bold text-xs">
+                      ★
                     </div>
                     <div>
                       <div className="flex items-center gap-1 text-[11px] text-amber-300 font-bold">
                         <span>★★★★★</span>
-                        <span className="text-white text-[10px] font-semibold">(1 200+ avis)</span>
+                        <span className="text-white text-[10px] font-semibold">(1 200+ avis vérifiés)</span>
                       </div>
                       <div className="text-[10px] text-white/80 font-medium">
-                        Adoré par les fashionistas d'Abidjan
+                        Livraison 24h & Paiement à la réception à Abidjan
                       </div>
                     </div>
                   </div>
 
                   <a
-                    href="#avis"
-                    className="text-[11px] font-bold text-[#F4A261] hover:underline whitespace-nowrap"
+                    href="#collection"
+                    className="text-[11px] font-bold text-[#F4A261] hover:underline whitespace-nowrap ml-2"
                   >
-                    Voir avis →
+                    Voir tout →
                   </a>
                 </div>
               </div>
