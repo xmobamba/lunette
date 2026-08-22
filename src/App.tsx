@@ -19,6 +19,7 @@ import { ProductModal } from './components/ProductModal';
 import { AdminManagerModal } from './components/AdminManagerModal';
 import { SocialStories } from './components/SocialStories';
 import { MobileSocialNav } from './components/MobileSocialNav';
+import { addPhotoToMediaLibrary, syncAllPhotosToMediaLibrary } from './utils/imageUpload';
 
 export default function App() {
   // 1. Dynamic Products State with localStorage persistence (v3 catalog - user custom images)
@@ -98,6 +99,11 @@ export default function App() {
     }
   });
 
+  // Initial sync of all photos to Admin Media Library
+  useEffect(() => {
+    syncAllPhotosToMediaLibrary(products);
+  }, []);
+
   // Synchronize favorites with localStorage
   const handleToggleFavorite = (productId: string) => {
     setFavorites((prev) => {
@@ -125,6 +131,9 @@ export default function App() {
 
   // Single Product Image Update
   const handleUpdateProductImage = (productId: string, newImage: string) => {
+    const targetProd = products.find((p) => p.id === productId);
+    addPhotoToMediaLibrary(newImage, targetProd?.name ? `${targetProd.name} (Photo)` : 'Photo Lunettes', productId, targetProd?.name);
+
     const updated = products.map((p) => {
       if (p.id === productId) {
         return {

@@ -201,7 +201,20 @@ export const Navbar: React.FC<NavbarProps> = ({
             ))}
           </div>
 
-          <div className="mt-3 pt-3 border-t border-[#E8E1D7]">
+          <div className="mt-3 pt-3 border-t border-[#E8E1D7] flex flex-col gap-2">
+            {onOpenAdmin && (
+              <button
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  onOpenAdmin();
+                }}
+                className="w-full flex items-center justify-center gap-2 bg-[#FAF0E6] text-[#B85318] font-bold text-sm py-2 rounded-xl border border-[#E8D4C0] cursor-pointer"
+              >
+                <span>📸</span>
+                <span>Gérer mes photos (Médiathèque Admin)</span>
+              </button>
+            )}
+
             <a
               href={buildGeneralWhatsAppUrl('general', customPhone)}
               target="_blank"

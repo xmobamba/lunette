@@ -3,7 +3,7 @@ import { Product, ProductCategory } from '../types';
 import { ProductCard } from './ProductCard';
 import { CategoryFilter } from './CategoryFilter';
 import { Search, Sparkles, Camera, Upload, Plus } from 'lucide-react';
-import { fileToBase64 } from '../utils/imageUpload';
+import { fileToBase64, addPhotoToMediaLibrary } from '../utils/imageUpload';
 
 interface ProductGridProps {
   products: Product[];
@@ -77,6 +77,7 @@ export const ProductGrid: React.FC<ProductGridProps> = ({
         // If product has no image or we are filling from start
         if (!updated[i].images || updated[i].images.length === 0) {
           const base64 = await fileToBase64(files[fileIdx]);
+          addPhotoToMediaLibrary(base64, `${updated[i].name} (Photo)`, updated[i].id, updated[i].name);
           updated[i] = {
             ...updated[i],
             images: [base64],
@@ -88,9 +89,12 @@ export const ProductGrid: React.FC<ProductGridProps> = ({
       // If there are still remaining uploaded files, create new products or assign to products
       while (fileIdx < files.length) {
         const base64 = await fileToBase64(files[fileIdx]);
+        const newProdId = `custom-eyewear-${Date.now()}-${fileIdx}`;
+        const newProdName = `Nouveau Modèle Lunettes ${updated.length + 1}`;
+        addPhotoToMediaLibrary(base64, `${newProdName} (Photo)`, newProdId, newProdName);
         updated.unshift({
-          id: `custom-eyewear-${Date.now()}-${fileIdx}`,
-          name: `Nouveau Modèle Lunettes ${updated.length + 1}`,
+          id: newProdId,
+          name: newProdName,
           slug: `nouveau-modele-lunettes-${Date.now()}`,
           category: ['femme', 'tendance', 'nouveautes'],
           subtitle: 'Protection UV400 • Modèle Haute Couture Abidjan',

@@ -78,6 +78,16 @@ export interface PromoBannerItem {
   position?: 'main' | 'top_bar' | 'both';
 }
 
+export interface MediaImage {
+  id: string;
+  url: string;
+  name?: string;
+  createdAt: number;
+  assignedProductId?: string;
+  assignedProductName?: string;
+  isHero?: boolean;
+}
+
 export interface StoreConfig {
   storeName: string;
   tagline: string;

@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   X,
   Phone,
@@ -31,14 +31,26 @@ import {
   Camera,
   Upload,
   ArrowRight,
-  Star
+  Star,
+  Maximize2,
+  FolderOpen,
+  Filter,
+  CheckCircle2
 } from 'lucide-react';
-import { Product, StoreConfig, PromoBannerItem, BannerTheme } from '../types';
+import { Product, StoreConfig, PromoBannerItem, MediaImage } from '../types';
 import { STORE_CONFIG } from '../config/store';
 import { PRODUCTS } from '../data/products';
-import { DEFAULT_PROMOS, THEME_STYLES } from '../data/promos';
+import { DEFAULT_PROMOS } from '../data/promos';
 import { formatFCFA } from '../utils/whatsapp';
-import { fileToBase64, getStoredHeroImage, setStoredHeroImage } from '../utils/imageUpload';
+import {
+  fileToBase64,
+  getStoredHeroImage,
+  setStoredHeroImage,
+  getStoredMediaLibrary,
+  saveStoredMediaLibrary,
+  addPhotoToMediaLibrary,
+  syncAllPhotosToMediaLibrary
+} from '../utils/imageUpload';
 
 interface AdminManagerModalProps {
   isOpen: boolean;
@@ -64,7 +76,18 @@ export const AdminManagerModal: React.FC<AdminManagerModalProps> = ({
   if (!isOpen) return null;
 
   const [activeTab, setActiveTab] = useState<'photos' | 'products' | 'promos' | 'add_product' | 'store'>('photos');
+  const [photoSubView, setPhotoSubView] = useState<'all_media' | 'by_product'>('all_media');
   const [feedbackMsg, setFeedbackMsg] = useState<string | null>(null);
+
+  // Media Library state
+  const [mediaLibrary, setMediaLibrary] = useState<MediaImage[]>(() => {
+    return syncAllPhotosToMediaLibrary(products);
+  });
+
+  // Modal zoom & assignment states
+  const [previewZoomImage, setPreviewZoomImage] = useState<string | null>(null);
+  const [assigningMedia, setAssigningMedia] = useState<MediaImage | null>(null);
+  const [pickingMediaForProduct, setPickingMediaForProduct] = useState<Product | null>(null);
 
   // Edit Product State
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
@@ -98,22 +121,7 @@ export const AdminManagerModal: React.FC<AdminManagerModalProps> = ({
   const [localConfig, setLocalConfig] = useState<StoreConfig>({ ...storeConfig });
 
   // Promotional Banner Form & Edit State
-  const [editingPromo, setEditingPromo] = useState<PromoBannerItem | null>(null);
   const [isCreatingPromo, setIsCreatingPromo] = useState(false);
-  const [newPromo, setNewPromo] = useState<Partial<PromoBannerItem>>({
-    title: '2 paires achetées = Livraison offerte partout à Abidjan !',
-    badge: 'OFFRE SPÉCIALE ABIDJAN',
-    description: 'Faites-vous plaisir ou offrez une paire à un proche. Commandez dès maintenant pour bénéficier de la livraison gratuite express.',
-    subtext: '*Valable sur toutes les communes d’Abidjan : Cocody, Marcory, Plateau, Yopougon...',
-    ctaText: 'J’en profite sur WhatsApp',
-    whatsappMessage: 'Bonjour L’AURA EYEWEAR, je souhaite profiter de votre promotion spéciale !',
-    theme: 'orange',
-    discountTag: 'LIVRAISON 0 FCFA',
-    countdownText: 'Offre limitée cette semaine',
-    image: '',
-    isActive: true,
-    position: 'both',
-  });
 
   // Photo Uploader States
   const [isUploadingPhotos, setIsUploadingPhotos] = useState(false);
@@ -122,63 +130,72 @@ export const AdminManagerModal: React.FC<AdminManagerModalProps> = ({
   const singleProductPhotoInputRef = useRef<HTMLInputElement>(null);
   const targetProductForSingleUpload = useRef<string | null>(null);
 
+  // Synchronize on modal open or products change
+  useEffect(() => {
+    const synced = syncAllPhotosToMediaLibrary(products);
+    setMediaLibrary(synced);
+    setHeroImagePreview(getStoredHeroImage());
+  }, [products, isOpen]);
+
   const showToast = (msg: string) => {
     setFeedbackMsg(msg);
-    setTimeout(() => setFeedbackMsg(null), 2500);
+    setTimeout(() => setFeedbackMsg(null), 2800);
   };
 
-  // Handle Multi-file Upload in Photos Tab
+  // Handle Multi-file Upload in Media Library
   const handleMultiFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
 
     try {
       setIsUploadingPhotos(true);
-      const updated = [...products];
-      let fileIdx = 0;
+      const newItems: MediaImage[] = [];
+      const updatedProducts = [...products];
+      let assignedCount = 0;
 
-      // Assign sequentially to products that lack images
-      for (let i = 0; i < updated.length && fileIdx < files.length; i++) {
-        if (!updated[i].images || updated[i].images.length === 0) {
-          const base64 = await fileToBase64(files[fileIdx]);
-          updated[i] = {
-            ...updated[i],
-            images: [base64],
-          };
-          fileIdx++;
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const base64 = await fileToBase64(file);
+        
+        // Check if there is a product without image to auto-assign
+        let targetProduct: Product | undefined;
+        for (let pIdx = 0; pIdx < updatedProducts.length; pIdx++) {
+          if (!updatedProducts[pIdx].images || updatedProducts[pIdx].images.length === 0) {
+            targetProduct = updatedProducts[pIdx];
+            updatedProducts[pIdx] = {
+              ...updatedProducts[pIdx],
+              images: [base64],
+            };
+            assignedCount++;
+            break;
+          }
         }
+
+        const mediaItem: MediaImage = {
+          id: `media-${Date.now()}-${i}-${Math.random().toString(36).substring(2, 6)}`,
+          url: base64,
+          name: file.name.replace(/\.[^/.]+$/, '') || `Photo Lunettes ${i + 1}`,
+          createdAt: Date.now(),
+          assignedProductId: targetProduct?.id,
+          assignedProductName: targetProduct?.name,
+          isHero: false,
+        };
+        newItems.push(mediaItem);
       }
 
-      // If more files were selected than empty products, prepend as new models
-      while (fileIdx < files.length) {
-        const base64 = await fileToBase64(files[fileIdx]);
-        updated.unshift({
-          id: `modele-custom-${Date.now()}-${fileIdx}`,
-          name: `Nouveau Modèle Lunettes ${updated.length + 1}`,
-          slug: `nouveau-modele-${Date.now()}`,
-          category: ['femme', 'tendance', 'nouveautes'],
-          subtitle: 'Protection UV400 • Modèle Haute Couture Abidjan',
-          description: 'Monture de lunettes de soleil tendance avec verres solaires UV400 haute protection.',
-          price: 35000,
-          oldPrice: 45000,
-          images: [base64],
-          colors: [{ name: 'Noir & Or', hex: '#0B0B0B', imageIndex: 0 }],
-          badge: 'Nouveau',
-          available: true,
-          rating: 5.0,
-          reviewCount: 1,
-          specs: {
-            uvProtection: 'UV400 Catégorie 3 (100% UVA/UVB)',
-            frameMaterial: 'Structure haute résistance & acétate poli',
-            lensType: 'Verres haute définition anti-reflet',
-            fit: 'Taille standard universelle',
-          },
-        });
-        fileIdx++;
+      // If no hero image is set, use the first uploaded photo as Hero
+      if (!getStoredHeroImage() && newItems.length > 0) {
+        newItems[0].isHero = true;
+        setStoredHeroImage(newItems[0].url);
+        setHeroImagePreview(newItems[0].url);
       }
 
-      onUpdateProducts(updated);
-      showToast(`✨ ${files.length} photo(s) importée(s) avec succès !`);
+      const mergedLibrary = [...newItems, ...mediaLibrary];
+      saveStoredMediaLibrary(mergedLibrary);
+      setMediaLibrary(mergedLibrary);
+      onUpdateProducts(updatedProducts);
+
+      showToast(`📸 ${files.length} photo(s) ajoutée(s) à votre médiathèque Admin !`);
     } catch (err) {
       console.error(err);
       showToast('❌ Erreur lors de l’importation.');
@@ -196,6 +213,16 @@ export const AdminManagerModal: React.FC<AdminManagerModalProps> = ({
 
     try {
       const base64 = await fileToBase64(file);
+      const targetProd = products.find((p) => p.id === targetId);
+
+      // Register in Media Library
+      const addedMedia = addPhotoToMediaLibrary(
+        base64,
+        `${targetProd?.name || 'Modèle'} - Photo`,
+        targetId,
+        targetProd?.name
+      );
+
       const updated = products.map((p) => {
         if (p.id === targetId) {
           return {
@@ -205,8 +232,10 @@ export const AdminManagerModal: React.FC<AdminManagerModalProps> = ({
         }
         return p;
       });
+
       onUpdateProducts(updated);
-      showToast('📸 Photo du produit mise à jour !');
+      setMediaLibrary(getStoredMediaLibrary());
+      showToast('📸 Photo enregistrée dans la médiathèque & attribuée au modèle !');
     } catch (err) {
       console.error(err);
     } finally {
@@ -214,40 +243,95 @@ export const AdminManagerModal: React.FC<AdminManagerModalProps> = ({
     }
   };
 
-  // Clear ALL images from landing page
-  const handleClearAllImages = () => {
-    if (window.confirm('Voulez-vous vraiment supprimer TOUTES les photos des produits et de la landing page pour repartir à zéro ?')) {
-      const cleared = products.map((p) => ({ ...p, images: [] }));
-      onUpdateProducts(cleared);
-      setStoredHeroImage(null);
-      setHeroImagePreview(null);
-      showToast('🧹 Toutes les photos ont été supprimées avec succès !');
-    }
-  };
+  // Assign an existing Media photo to a product
+  const handleAssignMediaToProduct = (mediaItem: MediaImage, productId: string) => {
+    const targetProd = products.find((p) => p.id === productId);
+    if (!targetProd) return;
 
-  // Set Hero Image
-  const handleSetAsHero = (imageUrl: string) => {
-    setStoredHeroImage(imageUrl);
-    setHeroImagePreview(imageUrl);
-    showToast('✨ Définie comme photo d’accueil principale !');
-  };
-
-  // Assign image to a product
-  const handleAssignToProduct = (productId: string, imageUrl: string) => {
+    // Update products
     const updated = products.map((p) => {
       if (p.id === productId) {
         return {
           ...p,
-          images: [imageUrl, ...(p.images || []).filter((img) => img !== imageUrl)],
+          images: [mediaItem.url, ...(p.images || []).filter((img) => img !== mediaItem.url)],
         };
       }
       return p;
     });
     onUpdateProducts(updated);
-    showToast('✅ Photo attribuée au modèle sélectionné !');
+
+    // Update Media Library Item
+    const updatedLibrary = mediaLibrary.map((m) => {
+      if (m.id === mediaItem.id || m.url === mediaItem.url) {
+        return {
+          ...m,
+          assignedProductId: targetProd.id,
+          assignedProductName: targetProd.name,
+        };
+      }
+      return m;
+    });
+    saveStoredMediaLibrary(updatedLibrary);
+    setMediaLibrary(updatedLibrary);
+    setAssigningMedia(null);
+    setPickingMediaForProduct(null);
+
+    showToast(`✅ Photo attribuée au modèle "${targetProd.name}" !`);
   };
 
-  // Delete an image from a product
+  // Set Photo as Hero
+  const handleSetAsHero = (imageUrl: string) => {
+    setStoredHeroImage(imageUrl);
+    setHeroImagePreview(imageUrl);
+
+    const updatedLibrary = mediaLibrary.map((m) => ({
+      ...m,
+      isHero: m.url === imageUrl,
+    }));
+    saveStoredMediaLibrary(updatedLibrary);
+    setMediaLibrary(updatedLibrary);
+
+    showToast('🌟 Photo définie comme photo d’accueil principale (Hero) !');
+  };
+
+  // Delete single photo from Media Library & Products
+  const handleDeleteMediaPhoto = (mediaId: string, mediaUrl: string) => {
+    if (window.confirm('Voulez-vous supprimer cette photo de la médiathèque et des modèles associés ?')) {
+      const updatedLib = mediaLibrary.filter((m) => m.id !== mediaId && m.url !== mediaUrl);
+      saveStoredMediaLibrary(updatedLib);
+      setMediaLibrary(updatedLib);
+
+      // Remove from products if present
+      const updatedProducts = products.map((p) => ({
+        ...p,
+        images: (p.images || []).filter((img) => img !== mediaUrl),
+      }));
+      onUpdateProducts(updatedProducts);
+
+      // If it was hero, remove it
+      if (heroImagePreview === mediaUrl) {
+        setStoredHeroImage(null);
+        setHeroImagePreview(null);
+      }
+
+      showToast('🗑️ Photo supprimée de la médiathèque');
+    }
+  };
+
+  // Clear ALL images from store
+  const handleClearAllImages = () => {
+    if (window.confirm('Voulez-vous vraiment supprimer TOUTES les photos de la médiathèque et de la boutique ?')) {
+      const cleared = products.map((p) => ({ ...p, images: [] }));
+      onUpdateProducts(cleared);
+      setStoredHeroImage(null);
+      setHeroImagePreview(null);
+      saveStoredMediaLibrary([]);
+      setMediaLibrary([]);
+      showToast('🧹 Toutes les photos ont été supprimées avec succès !');
+    }
+  };
+
+  // Delete a specific photo from a product only (not library)
   const handleDeleteProductImage = (productId: string, imageIndex: number) => {
     const updated = products.map((p) => {
       if (p.id === productId) {
@@ -331,12 +415,12 @@ export const AdminManagerModal: React.FC<AdminManagerModalProps> = ({
   const handleSaveStoreConfig = (e: React.FormEvent) => {
     e.preventDefault();
     onUpdateStoreConfig(localConfig);
-    showToast('✅ Paramètres de la boutique enregistrés !');
+    showToast('✅ Coordonnées et WhatsApp enregistrés !');
   };
 
   // Reset to default
   const handleResetCatalog = () => {
-    if (window.confirm('Réinitialiser le catalogue par défaut (sans photos) ?')) {
+    if (window.confirm('Réinitialiser le catalogue par défaut ?')) {
       onUpdateProducts(PRODUCTS);
       showToast('🔄 Catalogue réinitialisé !');
     }
@@ -345,7 +429,7 @@ export const AdminManagerModal: React.FC<AdminManagerModalProps> = ({
   return (
     <div
       id="admin-manager-backdrop"
-      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/75 backdrop-blur-sm animate-in fade-in duration-200"
+      className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-6 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200"
       onClick={onClose}
     >
       {/* Hidden file inputs */}
@@ -365,13 +449,110 @@ export const AdminManagerModal: React.FC<AdminManagerModalProps> = ({
         className="hidden"
       />
 
+      {/* Fullscreen Zoom Modal */}
+      {previewZoomImage && (
+        <div
+          className="fixed inset-0 z-60 bg-black/90 backdrop-blur-md flex items-center justify-center p-4"
+          onClick={() => setPreviewZoomImage(null)}
+        >
+          <div className="relative max-w-3xl max-h-[90vh] flex flex-col items-center">
+            <img
+              src={previewZoomImage}
+              alt="Aperçu Grand Format"
+              className="max-w-full max-h-[80vh] object-contain rounded-2xl border border-white/20 shadow-2xl"
+            />
+            <button
+              onClick={() => setPreviewZoomImage(null)}
+              className="mt-4 px-6 py-2 rounded-full bg-white/20 hover:bg-white text-white hover:text-black font-bold text-xs transition-all cursor-pointer"
+            >
+              Fermer l'aperçu
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Media Picker Modal (when selecting a photo for a product) */}
+      {pickingMediaForProduct && (
+        <div
+          className="fixed inset-0 z-60 bg-black/80 backdrop-blur-md flex items-center justify-center p-4"
+          onClick={() => setPickingMediaForProduct(null)}
+        >
+          <div
+            className="bg-white rounded-3xl p-6 max-w-2xl w-full max-h-[85vh] flex flex-col border border-[#E8E1D7] shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between pb-4 border-b border-[#EAE4DB]">
+              <div>
+                <h3 className="font-serif text-lg font-bold text-[#18261F]">
+                  Sélectionner une photo pour : <span className="text-[#C85A17]">{pickingMediaForProduct.name}</span>
+                </h3>
+                <p className="text-xs text-[#4A5850]">
+                  Choisissez une photo dans votre médiathèque Admin
+                </p>
+              </div>
+              <button
+                onClick={() => setPickingMediaForProduct(null)}
+                className="p-2 rounded-full hover:bg-[#FAF8F5] text-[#4A5850]"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto py-4">
+              {mediaLibrary.length > 0 ? (
+                <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
+                  {mediaLibrary.map((item) => (
+                    <div
+                      key={item.id}
+                      onClick={() => handleAssignMediaToProduct(item, pickingMediaForProduct.id)}
+                      className="group relative aspect-square rounded-2xl overflow-hidden border-2 border-[#E8E1D7] hover:border-[#C85A17] cursor-pointer transition-all hover:scale-105 shadow-2xs"
+                    >
+                      <img src={item.url} alt={item.name} className="w-full h-full object-cover" />
+                      <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white text-xs font-bold transition-opacity text-center p-1">
+                        Choisir cette photo
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-10">
+                  <Camera className="w-12 h-12 text-[#C85A17] mx-auto mb-2 opacity-50" />
+                  <p className="text-xs text-[#4A5850]">Aucune photo dans la médiathèque.</p>
+                </div>
+              )}
+            </div>
+
+            <div className="pt-3 border-t border-[#EAE4DB] flex justify-between items-center">
+              <button
+                onClick={() => {
+                  targetProductForSingleUpload.current = pickingMediaForProduct.id;
+                  singleProductPhotoInputRef.current?.click();
+                  setPickingMediaForProduct(null);
+                }}
+                className="px-4 py-2 rounded-xl bg-[#FAF0E6] text-[#B85318] font-bold text-xs flex items-center gap-1.5 cursor-pointer"
+              >
+                <Upload className="w-4 h-4" />
+                <span>Importer un nouveau fichier</span>
+              </button>
+              <button
+                onClick={() => setPickingMediaForProduct(null)}
+                className="px-4 py-2 rounded-xl text-xs font-bold text-[#4A5850] hover:bg-[#FAF8F5]"
+              >
+                Annuler
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Main Admin Card */}
       <div
         id="admin-manager-card"
         className="bg-white rounded-3xl border border-[#E8E1D7] shadow-2xl w-full max-w-5xl max-h-[92vh] flex flex-col overflow-hidden relative animate-in zoom-in-95 duration-200 text-[#18261F]"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Modal Header */}
-        <div className="p-4 sm:p-6 border-b border-[#EAE4DB] flex items-center justify-between bg-[#FAF8F5]">
+        <div className="p-4 sm:p-5 border-b border-[#EAE4DB] flex items-center justify-between bg-[#FAF8F5]">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-2xl bg-[#C85A17] flex items-center justify-center text-white shadow-sm">
               <Sliders className="w-5 h-5" />
@@ -379,14 +560,14 @@ export const AdminManagerModal: React.FC<AdminManagerModalProps> = ({
             <div>
               <div className="flex items-center gap-2">
                 <h2 className="font-serif text-lg sm:text-xl font-bold text-[#18261F]">
-                  Administration & Gestion des Photos
+                  Espace Administration & Médiathèque Photos
                 </h2>
                 <span className="text-[10px] bg-[#1E6B48] text-white px-2 py-0.5 rounded-full font-bold">
                   🇨🇮 Abidjan
                 </span>
               </div>
               <p className="text-xs text-[#4A5850]">
-                Ajoutez vos photos de lunettes, gérez le catalogue et les bannières promo
+                Toutes vos photos importées sont centralisées et gérables ici
               </p>
             </div>
           </div>
@@ -418,7 +599,7 @@ export const AdminManagerModal: React.FC<AdminManagerModalProps> = ({
             }`}
           >
             <Camera className="w-4 h-4" />
-            <span>📸 Mes Photos (Upload)</span>
+            <span>📸 Médiathèque & Photos ({mediaLibrary.length})</span>
           </button>
 
           <button
@@ -474,44 +655,63 @@ export const AdminManagerModal: React.FC<AdminManagerModalProps> = ({
         <div className="flex-1 overflow-y-auto p-4 sm:p-6 bg-white">
           
           {/* ========================================================================= */}
-          {/* TAB 1: 📸 MES PHOTOS (UPLOAD & ATTRIBUTION) */}
+          {/* TAB 1: 📸 MÉDIATHÈQUE & GESTION DES PHOTOS (ADMIN MEDIA HUB) */}
           {/* ========================================================================= */}
           {activeTab === 'photos' && (
             <div className="space-y-6">
-              {/* Top Action Box: Big Drag & Drop / Upload Zone */}
+              
+              {/* Top Drag & Drop Batch Upload Zone */}
               <div
                 onClick={() => photoInputRef.current?.click()}
-                className="border-2 border-dashed border-[#C85A17] hover:border-[#A84A12] bg-[#FAF0E6]/50 hover:bg-[#FAF0E6] p-8 rounded-3xl text-center cursor-pointer transition-all flex flex-col items-center justify-center group shadow-xs"
+                className="border-2 border-dashed border-[#C85A17] hover:border-[#A84A12] bg-[#FAF0E6]/50 hover:bg-[#FAF0E6] p-6 sm:p-8 rounded-3xl text-center cursor-pointer transition-all flex flex-col items-center justify-center group shadow-xs"
               >
-                <div className="w-16 h-16 rounded-2xl bg-white border border-[#E8D4C0] flex items-center justify-center text-[#C85A17] mb-3 group-hover:scale-110 transition-transform shadow-2xs">
+                <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-white border border-[#E8D4C0] flex items-center justify-center text-[#C85A17] mb-3 group-hover:scale-110 transition-transform shadow-2xs">
                   {isUploadingPhotos ? (
                     <div className="w-8 h-8 border-3 border-[#C85A17] border-t-transparent rounded-full animate-spin" />
                   ) : (
-                    <Upload className="w-8 h-8" />
+                    <Upload className="w-7 h-7 sm:w-8 sm:h-8" />
                   )}
                 </div>
 
-                <h3 className="font-serif text-lg font-bold text-[#18261F] mb-1">
+                <h3 className="font-serif text-base sm:text-lg font-bold text-[#18261F] mb-1">
                   Glissez ou sélectionnez vos photos de lunettes ici
                 </h3>
-                <p className="text-xs text-[#4A5850] max-w-md mb-4">
-                  Sélectionnez plusieurs photos à la fois depuis votre téléphone ou ordinateur. Elles seront automatiquement optimisées et attribuées à vos modèles.
+                <p className="text-xs text-[#4A5850] max-w-md mb-4 font-normal">
+                  Ajoutez plusieurs photos d'un coup. Elles seront enregistrées dans cette médiathèque et attribuées à vos modèles de lunettes.
                 </p>
 
                 <div className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#C85A17] text-white font-bold text-xs shadow-md">
                   <Camera className="w-4 h-4" />
-                  <span>Choisir mes fichiers photos</span>
+                  <span>Importer des photos dans la Médiathèque</span>
                 </div>
               </div>
 
-              {/* General Control Bar */}
-              <div className="flex flex-wrap items-center justify-between gap-3 p-4 bg-[#FAF8F5] rounded-2xl border border-[#E8E1D7]">
-                <div className="flex items-center gap-2 text-xs font-semibold text-[#18261F]">
-                  <span className="w-2.5 h-2.5 rounded-full bg-[#1E6B48]"></span>
-                  <span>
-                    <strong>{products.filter((p) => p.images && p.images.length > 0).length}</strong> modèles ont des photos /{' '}
-                    <strong>{products.length}</strong> modèles au total
-                  </span>
+              {/* Sub-Tabs & Filter Bar */}
+              <div className="flex flex-wrap items-center justify-between gap-3 p-3.5 sm:p-4 bg-[#FAF8F5] rounded-2xl border border-[#E8E1D7]">
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setPhotoSubView('all_media')}
+                    className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                      photoSubView === 'all_media'
+                        ? 'bg-[#18261F] text-white shadow-xs'
+                        : 'bg-white text-[#4A5850] hover:bg-[#F3EFEA] border border-[#E8E1D7]'
+                    }`}
+                  >
+                    <FolderOpen className="w-3.5 h-3.5 text-[#F4A261]" />
+                    <span>Toutes mes photos ({mediaLibrary.length})</span>
+                  </button>
+
+                  <button
+                    onClick={() => setPhotoSubView('by_product')}
+                    className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                      photoSubView === 'by_product'
+                        ? 'bg-[#18261F] text-white shadow-xs'
+                        : 'bg-white text-[#4A5850] hover:bg-[#F3EFEA] border border-[#E8E1D7]'
+                    }`}
+                  >
+                    <Layers className="w-3.5 h-3.5 text-[#1E6B48]" />
+                    <span>Attribution par modèle ({products.length})</span>
+                  </button>
                 </div>
 
                 <div className="flex items-center gap-2">
@@ -520,120 +720,242 @@ export const AdminManagerModal: React.FC<AdminManagerModalProps> = ({
                     className="px-3 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold text-xs border border-rose-200 flex items-center gap-1.5 transition-colors cursor-pointer"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
-                    <span>Supprimer toutes les photos</span>
-                  </button>
-
-                  <button
-                    onClick={handleResetCatalog}
-                    className="px-3 py-1.5 rounded-xl bg-white hover:bg-[#F3EFEA] text-[#4A5850] font-bold text-xs border border-[#E8E1D7] flex items-center gap-1.5 transition-colors cursor-pointer"
-                  >
-                    <RotateCcw className="w-3.5 h-3.5" />
-                    <span>Réinitialiser catalogue</span>
+                    <span>Vider toutes les photos</span>
                   </button>
                 </div>
               </div>
 
-              {/* Photo Attribution Table by Product */}
-              <div>
-                <h4 className="font-serif text-base font-bold text-[#18261F] mb-3 flex items-center gap-2">
-                  <span>Modèles de la boutique & Leurs photos</span>
-                  <span className="text-xs font-sans font-normal text-[#4A5850]">
-                    (Cliquez sur "Ajouter / Changer" pour attribuer une photo à chaque modèle)
-                  </span>
-                </h4>
+              {/* VIEW 1: TOUTES LES PHOTOS DE LA MÉDIATHÈQUE */}
+              {photoSubView === 'all_media' && (
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className="font-serif text-base font-bold text-[#18261F] flex items-center gap-2">
+                      <span>Photos enregistrées dans l'Admin</span>
+                      <span className="text-xs font-sans font-normal text-[#4A5850]">
+                        ({mediaLibrary.length} photo(s) au total)
+                      </span>
+                    </h4>
+                  </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {products.map((product) => {
-                    const hasImage = product.images && product.images.length > 0;
-                    return (
-                      <div
-                        key={product.id}
-                        className="p-4 rounded-2xl border border-[#E8E1D7] bg-white hover:border-[#C85A17]/50 shadow-2xs transition-all flex items-center justify-between gap-4"
-                      >
-                        {/* Thumbnail / Upload Box */}
-                        <div
-                          onClick={() => {
-                            targetProductForSingleUpload.current = product.id;
-                            singleProductPhotoInputRef.current?.click();
-                          }}
-                          className="w-20 h-20 rounded-2xl bg-[#FAF8F5] border border-[#E8E1D7] overflow-hidden shrink-0 flex items-center justify-center cursor-pointer hover:border-[#C85A17] group relative"
-                        >
-                          {hasImage ? (
-                            <>
-                              <img
-                                src={product.images[0]}
-                                alt={product.name}
-                                className="w-full h-full object-cover"
-                              />
-                              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white text-[10px] font-bold transition-opacity">
-                                Modifier
-                              </div>
-                            </>
-                          ) : (
-                            <div className="flex flex-col items-center justify-center text-[#C85A17] text-center p-1">
-                              <Plus className="w-5 h-5 mb-0.5" />
-                              <span className="text-[9px] font-bold">Ajouter</span>
-                            </div>
-                          )}
-                        </div>
+                  {mediaLibrary.length > 0 ? (
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                      {mediaLibrary.map((item) => {
+                        const isHero = item.isHero || item.url === heroImagePreview;
+                        const assignedProd = item.assignedProductId
+                          ? products.find((p) => p.id === item.assignedProductId)
+                          : undefined;
 
-                        {/* Product Info */}
-                        <div className="flex-1 min-w-0">
-                          <h5 className="font-serif text-sm font-bold text-[#18261F] truncate">
-                            {product.name}
-                          </h5>
-                          <p className="text-xs text-[#C85A17] font-bold">
-                            {formatFCFA(product.price)}
-                          </p>
-                          <p className="text-[11px] text-[#4A5850] truncate mt-0.5">
-                            {product.subtitle}
-                          </p>
-                          <span className={`inline-block text-[10px] font-bold px-2 py-0.5 rounded-full mt-1.5 ${
-                            hasImage ? 'bg-[#E8F1EC] text-[#1E6B48]' : 'bg-[#FAF0E6] text-[#B85318]'
-                          }`}>
-                            {hasImage ? `✓ ${product.images.length} photo(s)` : '⚠️ Aucune photo'}
-                          </span>
-                        </div>
-
-                        {/* Actions */}
-                        <div className="flex flex-col gap-1.5 shrink-0">
-                          <button
-                            onClick={() => {
-                              targetProductForSingleUpload.current = product.id;
-                              singleProductPhotoInputRef.current?.click();
-                            }}
-                            className="px-3 py-1.5 rounded-xl bg-[#FAF0E6] hover:bg-[#F3E2CF] text-[#B85318] font-bold text-xs flex items-center gap-1 cursor-pointer transition-colors"
+                        return (
+                          <div
+                            key={item.id}
+                            className="group relative bg-white rounded-2xl border border-[#E8E1D7] hover:border-[#C85A17] overflow-hidden shadow-2xs hover:shadow-md transition-all flex flex-col"
                           >
-                            <Camera className="w-3.5 h-3.5" />
-                            <span>{hasImage ? 'Changer' : 'Ajouter'}</span>
-                          </button>
+                            {/* Photo Aspect Stage */}
+                            <div className="relative aspect-square w-full bg-[#FAF8F5] overflow-hidden">
+                              <img
+                                src={item.url}
+                                alt={item.name}
+                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                              />
 
-                          {hasImage && (
-                            <button
-                              onClick={() => handleSetAsHero(product.images[0])}
-                              className="px-3 py-1 rounded-xl bg-white hover:bg-[#FAF8F5] text-[#18261F] text-[10px] font-bold border border-[#E8E1D7] flex items-center gap-1 cursor-pointer transition-colors"
-                              title="Définir comme photo d'en-tête (Hero)"
-                            >
-                              <Star className="w-3 h-3 text-amber-500" />
-                              <span>Mettre en Hero</span>
-                            </button>
-                          )}
+                              {/* Badges on top of image */}
+                              <div className="absolute top-2 left-2 flex flex-col gap-1 z-10 pointer-events-none">
+                                {isHero && (
+                                  <span className="bg-amber-500 text-white text-[9px] font-extrabold px-2 py-0.5 rounded-md shadow-xs flex items-center gap-1">
+                                    <Star className="w-2.5 h-2.5 fill-white" />
+                                    <span>Photo Accueil Hero</span>
+                                  </span>
+                                )}
+                                {assignedProd ? (
+                                  <span className="bg-[#1E6B48] text-white text-[9px] font-bold px-2 py-0.5 rounded-md shadow-xs truncate max-w-[130px]">
+                                    ✓ {assignedProd.name}
+                                  </span>
+                                ) : (
+                                  <span className="bg-black/60 backdrop-blur-xs text-white text-[9px] font-medium px-1.5 py-0.5 rounded-md">
+                                    Non assignée
+                                  </span>
+                                )}
+                              </div>
 
-                          {hasImage && (
-                            <button
-                              onClick={() => handleDeleteProductImage(product.id, 0)}
-                              className="p-1 rounded-lg text-rose-600 hover:bg-rose-50 self-end transition-colors cursor-pointer"
-                              title="Retirer la photo"
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </button>
-                          )}
-                        </div>
+                              {/* Zoom button on hover */}
+                              <button
+                                onClick={() => setPreviewZoomImage(item.url)}
+                                className="absolute top-2 right-2 p-1.5 rounded-full bg-black/60 hover:bg-black text-white opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer shadow-md"
+                                title="Aperçu Grand Format"
+                              >
+                                <Maximize2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+
+                            {/* Info & Action Controls */}
+                            <div className="p-3 flex flex-col justify-between flex-1 bg-white border-t border-[#F0EBE1]">
+                              <div>
+                                <p className="text-xs font-bold text-[#18261F] truncate" title={item.name}>
+                                  {item.name}
+                                </p>
+                                <p className="text-[10px] text-[#4A5850] truncate mt-0.5">
+                                  {assignedProd ? `Lié à : ${assignedProd.name}` : 'Médiathèque libre'}
+                                </p>
+                              </div>
+
+                              {/* Action Buttons */}
+                              <div className="mt-2.5 pt-2 border-t border-[#F3EFEA] flex flex-col gap-1.5">
+                                {/* Assign to Product Selector Dropdown */}
+                                <select
+                                  value={assignedProd?.id || ''}
+                                  onChange={(e) => {
+                                    if (e.target.value) {
+                                      handleAssignMediaToProduct(item, e.target.value);
+                                    }
+                                  }}
+                                  className="w-full text-[10px] font-semibold bg-[#FAF8F5] border border-[#E8E1D7] rounded-lg px-2 py-1 text-[#18261F] cursor-pointer"
+                                >
+                                  <option value="">Attribuer à un modèle...</option>
+                                  {products.map((p) => (
+                                    <option key={p.id} value={p.id}>
+                                      🕶️ {p.name} ({formatFCFA(p.price)})
+                                    </option>
+                                  ))}
+                                </select>
+
+                                <div className="flex items-center justify-between gap-1 pt-1">
+                                  <button
+                                    onClick={() => handleSetAsHero(item.url)}
+                                    className={`px-2 py-1 rounded-lg text-[10px] font-bold flex items-center gap-1 cursor-pointer transition-colors ${
+                                      isHero
+                                        ? 'bg-amber-100 text-amber-800'
+                                        : 'bg-[#FAF0E6] hover:bg-[#F3E2CF] text-[#B85318]'
+                                    }`}
+                                    title="Définir comme photo d'accueil Hero"
+                                  >
+                                    <Star className="w-3 h-3 text-amber-500 fill-current" />
+                                    <span>{isHero ? 'En Hero' : 'Mettre Hero'}</span>
+                                  </button>
+
+                                  <button
+                                    onClick={() => handleDeleteMediaPhoto(item.id, item.url)}
+                                    className="p-1 rounded-lg text-rose-600 hover:bg-rose-50 cursor-pointer transition-colors"
+                                    title="Supprimer la photo"
+                                  >
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div className="text-center py-12 px-4 bg-[#FAF8F5] rounded-3xl border border-dashed border-[#E8E1D7]">
+                      <div className="w-14 h-14 rounded-2xl bg-[#FAF0E6] flex items-center justify-center text-[#C85A17] mx-auto mb-3">
+                        <Camera className="w-7 h-7" />
                       </div>
-                    );
-                  })}
+                      <h4 className="font-serif text-base font-bold text-[#18261F] mb-1">
+                        Votre Médiathèque est actuellement vide
+                      </h4>
+                      <p className="text-xs text-[#4A5850] max-w-sm mx-auto mb-4">
+                        Importez vos photos de lunettes de soleil en utilisant la zone de dépôt ci-dessus pour les retrouver et les organiser ici.
+                      </p>
+                      <button
+                        onClick={() => photoInputRef.current?.click()}
+                        className="px-5 py-2.5 rounded-full bg-[#C85A17] text-white font-bold text-xs shadow-md cursor-pointer inline-flex items-center gap-1.5"
+                      >
+                        <Upload className="w-4 h-4" />
+                        <span>Importer mes premières photos</span>
+                      </button>
+                    </div>
+                  )}
                 </div>
-              </div>
+              )}
+
+              {/* VIEW 2: ATTRIBUTION PAR MODÈLE DU CATALOGUE */}
+              {photoSubView === 'by_product' && (
+                <div className="space-y-4">
+                  <h4 className="font-serif text-base font-bold text-[#18261F] flex items-center gap-2">
+                    <span>Attribution des photos par modèle de lunettes</span>
+                  </h4>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {products.map((product) => {
+                      const hasImage = product.images && product.images.length > 0;
+                      return (
+                        <div
+                          key={product.id}
+                          className="p-4 rounded-2xl border border-[#E8E1D7] bg-white hover:border-[#C85A17]/50 shadow-2xs transition-all flex items-center justify-between gap-4"
+                        >
+                          {/* Thumbnail / Upload Box */}
+                          <div
+                            onClick={() => setPickingMediaForProduct(product)}
+                            className="w-20 h-20 rounded-2xl bg-[#FAF8F5] border border-[#E8E1D7] overflow-hidden shrink-0 flex items-center justify-center cursor-pointer hover:border-[#C85A17] group relative"
+                            title="Changer la photo depuis la médiathèque"
+                          >
+                            {hasImage ? (
+                              <>
+                                <img
+                                  src={product.images[0]}
+                                  alt={product.name}
+                                  className="w-full h-full object-cover"
+                                />
+                                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white text-[10px] font-bold transition-opacity">
+                                  Changer
+                                </div>
+                              </>
+                            ) : (
+                              <div className="flex flex-col items-center justify-center text-[#C85A17] text-center p-1">
+                                <Plus className="w-5 h-5 mb-0.5" />
+                                <span className="text-[9px] font-bold">Choisir</span>
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Product Info */}
+                          <div className="flex-1 min-w-0">
+                            <h5 className="font-serif text-sm font-bold text-[#18261F] truncate">
+                              {product.name}
+                            </h5>
+                            <p className="text-xs text-[#C85A17] font-bold">
+                              {formatFCFA(product.price)}
+                            </p>
+                            <p className="text-[11px] text-[#4A5850] truncate mt-0.5">
+                              {product.subtitle}
+                            </p>
+                            <span
+                              className={`inline-block text-[10px] font-bold px-2 py-0.5 rounded-full mt-1.5 ${
+                                hasImage ? 'bg-[#E8F1EC] text-[#1E6B48]' : 'bg-[#FAF0E6] text-[#B85318]'
+                              }`}
+                            >
+                              {hasImage ? `✓ Photo assignée` : '⚠️ Sans photo'}
+                            </span>
+                          </div>
+
+                          {/* Action buttons */}
+                          <div className="flex flex-col gap-1.5 shrink-0">
+                            <button
+                              onClick={() => setPickingMediaForProduct(product)}
+                              className="px-3 py-1.5 rounded-xl bg-[#FAF0E6] hover:bg-[#F3E2CF] text-[#B85318] font-bold text-xs flex items-center gap-1 cursor-pointer transition-colors"
+                            >
+                              <Camera className="w-3.5 h-3.5" />
+                              <span>{hasImage ? 'Changer' : 'Assigner'}</span>
+                            </button>
+
+                            {hasImage && (
+                              <button
+                                onClick={() => handleDeleteProductImage(product.id, 0)}
+                                className="p-1 rounded-lg text-rose-600 hover:bg-rose-50 self-end transition-colors cursor-pointer"
+                                title="Retirer la photo du produit"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
             </div>
           )}
 
@@ -715,14 +1037,11 @@ export const AdminManagerModal: React.FC<AdminManagerModalProps> = ({
                       )}
                       <button
                         type="button"
-                        onClick={() => {
-                          targetProductForSingleUpload.current = editingProduct.id;
-                          singleProductPhotoInputRef.current?.click();
-                        }}
+                        onClick={() => setPickingMediaForProduct(editingProduct)}
                         className="px-3 py-2 rounded-xl bg-[#FAF0E6] text-[#B85318] font-bold text-xs flex items-center gap-1.5 cursor-pointer"
                       >
                         <Camera className="w-4 h-4" />
-                        <span>Changer la photo</span>
+                        <span>Choisir dans la médiathèque</span>
                       </button>
                     </div>
                   </div>
@@ -819,7 +1138,7 @@ export const AdminManagerModal: React.FC<AdminManagerModalProps> = ({
                   <label className="block text-xs font-bold text-[#18261F] mb-1">Nom du modèle *</label>
                   <input
                     type="text"
-                    placeholder="Ex: Chanel Masque Noir"
+                    placeholder="Ex: Dior Masque Noir"
                     value={newProduct.name}
                     onChange={(e) => setNewProduct({ ...newProduct, name: e.target.value })}
                     className="w-full px-3 py-2 text-xs bg-white border border-[#E8E1D7] rounded-xl font-medium"
@@ -927,7 +1246,7 @@ export const AdminManagerModal: React.FC<AdminManagerModalProps> = ({
                   type="text"
                   placeholder="+225 07 XX XX XX XX"
                   value={localConfig.phoneRaw}
-                  onChange={(e) => setLocalConfig({ ...localConfig, phoneRaw: e.target.value, phoneFormatted: e.target.value })}
+                  onChange={(e) => setLocalConfig({ ...localConfig, phoneRaw: e.target.value, phoneDisplay: e.target.value })}
                   className="w-full px-3 py-2.5 text-xs bg-white border border-[#E8E1D7] rounded-xl font-bold text-[#1E6B48]"
                   required
                 />
@@ -947,8 +1266,8 @@ export const AdminManagerModal: React.FC<AdminManagerModalProps> = ({
                 <label className="block text-xs font-bold text-[#18261F] mb-1">Ville & Pays</label>
                 <input
                   type="text"
-                  value={localConfig.address}
-                  onChange={(e) => setLocalConfig({ ...localConfig, address: e.target.value })}
+                  value={localConfig.city}
+                  onChange={(e) => setLocalConfig({ ...localConfig, city: e.target.value })}
                   className="w-full px-3 py-2 text-xs bg-white border border-[#E8E1D7] rounded-xl"
                 />
               </div>
